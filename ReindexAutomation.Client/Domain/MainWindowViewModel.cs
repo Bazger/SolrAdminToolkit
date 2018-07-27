@@ -20,7 +20,7 @@ namespace ReindexAutomation.Client.Domain
                         DocumentationLink.DemoPageLink<Home>()
                     }
                 ),
-                new Section("Zookeper managment", new ZookeeperManagment(),
+                new Section("Zookeper managment", new ZookeeperManagment{DataContext = new ZookeeperManagmentViewModel(snackbarMessageQueue)},
                     new[]
                     {
                         new DocumentationLink(DocumentationLinkType.Wiki,

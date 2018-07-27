@@ -39,14 +39,13 @@
                         </Grid.RowDefinitions>
                         <StackPanel Orientation="Horizontal" Margin="0 0 0 10" HorizontalAlignment="Stretch">
                             <TextBox Margin="0 0 10 0" Width="300" 
-                                     materialDesign:HintAssist.Hint="Configs direcotry">
-                                <TextBox.Text>
-                                    <Binding Path="Name" UpdateSourceTrigger="PropertyChanged"/>
-                                </TextBox.Text>
+                                     materialDesign:HintAssist.Hint="Configs direcotry"
+                                     Text="{Binding ConfigsPath}">
                             </TextBox>
-                            <Button Style="{StaticResource MaterialDesignRaisedButton}" VerticalAlignment="Bottom"
-                                        Width="100"
-                                        ToolTip="Select entered directory">
+                            <Button Style="{StaticResource MaterialDesignRaisedButton}" VerticalAlignment="Bottom" 
+                                    Width="100"
+                                    Command="{Binding ApplyCommand}"
+                                    ToolTip="Select entered directory">
                                 <StackPanel Orientation="Horizontal">
                                     <materialDesign:PackIcon Kind="Check" />
                                     <TextBlock Text="Apply" Margin="4 0 4 0"/>
