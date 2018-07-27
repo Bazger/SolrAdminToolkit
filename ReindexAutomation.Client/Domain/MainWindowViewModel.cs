@@ -1,8 +1,5 @@
 ﻿using System.Configuration;
-using ReindexAutomation.Client.Domain;
 using MaterialDesignThemes.Wpf;
-using MaterialDesignThemes.Wpf.Transitions;
-using System.Windows.Controls;
 using System;
 
 namespace ReindexAutomation.Client.Domain
@@ -13,9 +10,17 @@ namespace ReindexAutomation.Client.Domain
         {
             if (snackbarMessageQueue == null) throw new ArgumentNullException(nameof(snackbarMessageQueue));
 
-            DemoItems = new[]
+            Sections = new[]
             {
-                new DemoItem("Home", new Home(),
+                new Section("Home", new Home(),
+                    new[]
+                    {
+                        new DocumentationLink(DocumentationLinkType.Wiki,
+                            $"{ConfigurationManager.AppSettings["GitHub"]}/wiki", "WIKI"),
+                        DocumentationLink.DemoPageLink<Home>()
+                    }
+                ),
+                new Section("Zookeper managment", new ZookeeperManagment(),
                     new[]
                     {
                         new DocumentationLink(DocumentationLinkType.Wiki,
@@ -26,6 +31,6 @@ namespace ReindexAutomation.Client.Domain
             };
         }
 
-        public DemoItem[] DemoItems { get; }
+        public Section[] Sections { get; }
     }
 }

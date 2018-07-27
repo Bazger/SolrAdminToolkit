@@ -7,7 +7,7 @@
              xmlns:domain="clr-namespace:ReindexAutomation.Client.Domain"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
-             d:DataContext="{d:DesignInstance domain:DemoItem, IsDesignTimeCreatable=True }">
+             d:DataContext="{d:DesignInstance domain:Section, IsDesignTimeCreatable=True }">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

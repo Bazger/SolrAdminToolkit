@@ -53,7 +53,7 @@ namespace ReindexAutomation.Client.Domain
 
         public IList<int> LongListToTestComboVirtualization { get; }
 
-        public DemoItem DemoItem => new DemoItem("Mr. Test", null, Enumerable.Empty<DocumentationLink>());
+        public Section Section => new Section("Mr. Test", null, Enumerable.Empty<DocumentationLink>());
 
         public event PropertyChangedEventHandler PropertyChanged;
 

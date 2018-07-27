@@ -10,7 +10,7 @@ using System.Windows.Markup;
 
 namespace ReindexAutomation.Client.Domain
 {
-    public class DemoItem : INotifyPropertyChanged
+    public class Section : INotifyPropertyChanged
     {
         private string _name;
         private object _content;
@@ -18,7 +18,7 @@ namespace ReindexAutomation.Client.Domain
         private ScrollBarVisibility _verticalScrollBarVisibilityRequirement;
         private Thickness _marginRequirement = new Thickness(16);
 
-        public DemoItem(string name, object content, IEnumerable<DocumentationLink> documentation)
+        public Section(string name, object content, IEnumerable<DocumentationLink> documentation)
         {
             _name = name;
             Content = content;
