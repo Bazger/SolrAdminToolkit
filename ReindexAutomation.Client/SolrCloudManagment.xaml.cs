@@ -29,6 +29,9 @@ namespace ReindexAutomation.Client
 
         private void SolrCloudManagment_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
+            double newWindowHeight = e.NewSize.Height;
+            double newWindowWidth = e.NewSize.Width;
+            Debug.WriteLine(newWindowWidth + ":" + newWindowHeight);
             LinksTextBox.MaxWidth = e.NewSize.Width - 80;
         }
     }
