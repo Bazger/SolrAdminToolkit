@@ -20,7 +20,15 @@ namespace ReindexAutomation.Client.Domain
                         DocumentationLink.DemoPageLink<Home>()
                     }
                 ),
-                new Section("Zookeper managment", new ZookeeperManagment{DataContext = new ZookeeperManagmentViewModel(snackbarMessageQueue)},
+                new Section("SolrCloud Managment", new ZookeeperManagment{DataContext = new ZookeeperManagmentViewModel(snackbarMessageQueue)},
+                    new[]
+                    {
+                        new DocumentationLink(DocumentationLinkType.Wiki,
+                            $"{ConfigurationManager.AppSettings["GitHub"]}/wiki", "WIKI"),
+                        DocumentationLink.DemoPageLink<Home>()
+                    }
+                ),
+                new Section("Zookeper Managment", new ZookeeperManagment{DataContext = new ZookeeperManagmentViewModel(snackbarMessageQueue)},
                     new[]
                     {
                         new DocumentationLink(DocumentationLinkType.Wiki,

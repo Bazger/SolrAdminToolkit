@@ -4,7 +4,7 @@
         xmlns:domain="clr-namespace:ReindexAutomation.Client.Domain"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-        Title="Material Design in XAML" Height="800" Width="1100"
+        Title="Solr Administration Toolkit" Height="800" Width="1100"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
         TextElement.FontSize="13"
@@ -69,7 +69,7 @@
                                 <Button Content="Goodbye" Click="MenuPopupButton_OnClick"/>                                
                             </StackPanel>
                         </materialDesign:PopupBox>
-                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="22">Material Design In XAML Toolkit</TextBlock>
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="22">Solr Administration Toolkit</TextBlock>
                     </DockPanel>
                 </materialDesign:ColorZone>
                 <Grid>
@@ -86,9 +86,10 @@
                                   Padding="{Binding ElementName=SectionsListBox, Path=SelectedItem.MarginRequirement}">
                         <ContentControl Content="{Binding ElementName=SectionsListBox, Path=SelectedItem.Content}" />
                     </ScrollViewer>
-                    
+
                     <materialDesign:Snackbar MessageQueue="{materialDesign:MessageQueue}" x:Name="MainSnackbar"
-                                            Grid.Row="1" />
+                                            Grid.Row="1" >
+                    </materialDesign:Snackbar>
                 </Grid>
             </DockPanel>
         </materialDesign:DrawerHost>
