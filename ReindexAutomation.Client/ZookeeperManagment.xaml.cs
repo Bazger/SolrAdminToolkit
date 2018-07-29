@@ -26,5 +26,13 @@ namespace ReindexAutomation.Client
         {
             InitializeComponent();
         }
+
+        private void DirectoriesTree_OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            foreach (TreeViewItem dataNode in DirectoriesTree.Items)
+            {
+                dataNode.IsExpanded = true;
+            }
+        }
     }
 }

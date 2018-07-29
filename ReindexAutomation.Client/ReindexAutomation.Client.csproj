@@ -90,7 +90,6 @@
       <DependentUpon>DocumentationLinks.xaml</DependentUpon>
     </Compile>
     <Compile Include="Domain\DocumentationLinkType.cs" />
-    <Compile Include="Domain\FutureDateValidationRule.cs" />
     <Compile Include="Domain\IsCheckedValidationRule.cs" />
     <Compile Include="Domain\SolrCloudManagmentViewModel.cs" />
     <Compile Include="Domain\ZookeeperManagmentViewModel.cs" />
@@ -116,8 +115,6 @@
     <Compile Include="Domain\SelectableViewModel.cs" />
     <Compile Include="Domain\SimpleDataTemplateSelector.cs" />
     <Compile Include="Domain\SimpleDateValidationRule.cs" />
-    <Compile Include="Domain\TextFieldsViewModel.cs" />
-    <Compile Include="Domain\TreesViewModel.cs" />
     <Compile Include="SolrCloudManagment.xaml.cs">
       <DependentUpon>SolrCloudManagment.xaml</DependentUpon>
     </Compile>

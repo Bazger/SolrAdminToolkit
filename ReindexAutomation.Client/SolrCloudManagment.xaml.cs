@@ -22,6 +22,7 @@ namespace ReindexAutomation.Client
     /// </summary>
     public partial class SolrCloudManagment : UserControl
     {
+
         public SolrCloudManagment()
         {
             InitializeComponent();
@@ -29,10 +30,28 @@ namespace ReindexAutomation.Client
 
         private void SolrCloudManagment_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            double newWindowHeight = e.NewSize.Height;
-            double newWindowWidth = e.NewSize.Width;
-            Debug.WriteLine(newWindowWidth + ":" + newWindowHeight);
-            LinksTextBox.MaxWidth = e.NewSize.Width - 80;
+
+        }
+
+        private void LinksCard_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            //Normalization for TextBox size when window size decreasing
+            var tempWidth = GetSizeOfTextBox(LinksCard, LinksTextBox);
+            if (tempWidth >= LinksTextBox.MinWidth)
+            {
+                LinksTextBox.Width = tempWidth;
+            }
+
+            tempWidth = GetSizeOfTextBox(ConfigurationCard, ConfigurationTextBox);
+            if (tempWidth >= ConfigurationTextBox.MinWidth)
+            {
+                ConfigurationTextBox.Width = tempWidth;
+            }
+        }
+
+        public static double GetSizeOfTextBox(Control parent, Control textBoxControl)
+        {
+            return parent.ActualWidth - parent.Margin.Left - parent.Padding.Left - parent.Padding.Right - textBoxControl.Margin.Right - textBoxControl.Margin.Left - 20;
         }
     }
 }
