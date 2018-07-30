@@ -36,22 +36,40 @@ namespace ReindexAutomation.Client
         private void LinksCard_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             //Normalization for TextBox size when window size decreasing
-            var tempWidth = GetSizeOfTextBox(LinksCard, LinksTextBox);
+            var tempWidth = GetWidthOfTextBox(LinksCard, LinksTextBox);
             if (tempWidth >= LinksTextBox.MinWidth)
             {
                 LinksTextBox.Width = tempWidth;
             }
 
-            tempWidth = GetSizeOfTextBox(ConfigurationCard, ConfigurationTextBox);
+            tempWidth = GetWidthOfTextBox(ConfigurationCard, ConfigurationTextBox);
             if (tempWidth >= ConfigurationTextBox.MinWidth)
             {
                 ConfigurationTextBox.Width = tempWidth;
             }
+
+            var tempHeight = GetHeightOfTextBox(ConfigurationCard, ConfigurationTextBox);
+            if (tempHeight >= ConfigurationTextBox.MinHeight)
+            {
+                ConfigurationTextBox.MinHeight = tempHeight;
+            }
+     
+            //tempHeight = GetHeightOfTextBox(ConfigurationCard, ConfigurationTextBox);
+            //Debug.WriteLine("Card - " + Conf);
+            //if (tempHeight >= HistoryTree.MinHeight)
+            //{
+            //    HistoryTree.MaxHeight = tempHeight;
+            //}
         }
 
-        public static double GetSizeOfTextBox(Control parent, Control textBoxControl)
+        public static double GetWidthOfTextBox(Control parent, Control textBoxControl)
         {
             return parent.ActualWidth - parent.Margin.Left - parent.Padding.Left - parent.Padding.Right - textBoxControl.Margin.Right - textBoxControl.Margin.Left - 20;
+        }
+
+        public static double GetHeightOfTextBox(Control parent, Control textBoxControl)
+        {
+            return parent.ActualHeight - parent.Margin.Top - parent.Padding.Top - parent.Padding.Bottom - textBoxControl.Margin.Bottom - textBoxControl.Margin.Top - 20;
         }
     }
 }

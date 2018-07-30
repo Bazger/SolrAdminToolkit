@@ -78,6 +78,9 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="ZooKeeperNetEx, Version=3.4.12.0, Culture=neutral, PublicKeyToken=42cd15de36f9b993, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\Downloads\MaterialDesignInXamlToolkit-master\MaterialDesignInXamlToolkit-master\packages\ZooKeeperNetEx.3.4.12\lib\net45\ZooKeeperNetEx.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -118,6 +121,7 @@
     <Compile Include="SolrCloudManagment.xaml.cs">
       <DependentUpon>SolrCloudManagment.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Utils\ZookeeperUtils.cs" />
     <Compile Include="ZookeeperManagment.xaml.cs">
       <DependentUpon>ZookeeperManagment.xaml</DependentUpon>
     </Compile>
@@ -187,6 +191,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -231,6 +236,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.2')">
