@@ -45,7 +45,7 @@ namespace ReindexAutomation.Client.Domain
         {
             if (!Directory.Exists(path))
             {
-                _snackbarMessageQueue.Enqueue("Wrong Path!","OK", () => Trace.WriteLine("Actioned"));
+                _snackbarMessageQueue.Enqueue("Wrong Path!", "OK", () => Trace.WriteLine("Actioned"));
                 return;
             }
             var selectedDir = new TreeViewDirectory(path, path)
@@ -56,7 +56,6 @@ namespace ReindexAutomation.Client.Domain
 
             RootDirectories.Clear();
             RootDirectories.Add(selectedDir);
-
         }
 
         public ObservableCollection<TreeViewDirectory> RootDirectories { get; private set; }

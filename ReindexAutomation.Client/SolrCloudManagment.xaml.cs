@@ -35,30 +35,23 @@ namespace ReindexAutomation.Client
 
         private void LinksCard_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            //Normalization for TextBox size when window size decreasing
-            var tempWidth = GetWidthOfTextBox(LinksCard, LinksTextBox);
-            if (tempWidth >= LinksTextBox.MinWidth)
-            {
-                LinksTextBox.Width = tempWidth;
-            }
-
-            tempWidth = GetWidthOfTextBox(ConfigurationCard, ConfigurationTextBox);
-            if (tempWidth >= ConfigurationTextBox.MinWidth)
-            {
-                ConfigurationTextBox.Width = tempWidth;
-            }
-
-            var tempHeight = GetHeightOfTextBox(ConfigurationCard, ConfigurationTextBox);
-            if (tempHeight >= ConfigurationTextBox.MinHeight)
-            {
-                ConfigurationTextBox.MinHeight = tempHeight;
-            }
-     
-            //tempHeight = GetHeightOfTextBox(ConfigurationCard, ConfigurationTextBox);
-            //Debug.WriteLine("Card - " + Conf);
-            //if (tempHeight >= HistoryTree.MinHeight)
+            //Normalization for TextBox size when window size decreasing ONLY WHEN sclollbar HrozizontalVisibility equals Auto
+            //var tempWidth = GetWidthOfTextBox(LinksCard, LinksTextBox);
+            //if (tempWidth >= LinksTextBox.MinWidth)
             //{
-            //    HistoryTree.MaxHeight = tempHeight;
+            //    LinksTextBox.Width = tempWidth;
+            //}
+
+            //tempWidth = GetWidthOfTextBox(ConfigurationCard, ConfigurationTextBox);
+            //if (tempWidth >= ConfigurationTextBox.MinWidth)
+            //{
+            //    ConfigurationTextBox.Width = tempWidth;
+            //}
+
+            //var tempHeight = GetHeightOfTextBox(ConfigurationCard, ConfigurationTextBox);
+            //if (tempHeight >= ConfigurationTextBox.MinHeight)
+            //{
+            //    ConfigurationTextBox.MinHeight = tempHeight;
             //}
         }
 
