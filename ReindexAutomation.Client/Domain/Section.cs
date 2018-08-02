@@ -13,14 +13,17 @@ namespace ReindexAutomation.Client.Domain
     public class Section : INotifyPropertyChanged
     {
         private string _name;
+        private string _title;
         private object _content;
         private ScrollBarVisibility _horizontalScrollBarVisibilityRequirement;
         private ScrollBarVisibility _verticalScrollBarVisibilityRequirement;
         private Thickness _marginRequirement = new Thickness(16);
 
-        public Section(string name, object content, IEnumerable<DocumentationLink> documentation)
+
+        public Section(string name, string title, object content, IEnumerable<DocumentationLink> documentation)
         {
             _name = name;
+            _title = title;
             Content = content;
             Documentation = documentation;
         }
@@ -29,6 +32,12 @@ namespace ReindexAutomation.Client.Domain
         {
             get { return _name; }
             set { this.MutateVerbose(ref _name, value, RaisePropertyChanged()); }
+        }
+
+        public string Title
+        {
+            get { return _title; }
+            set { this.MutateVerbose(ref _title, value, RaisePropertyChanged()); }
         }
 
         public object Content

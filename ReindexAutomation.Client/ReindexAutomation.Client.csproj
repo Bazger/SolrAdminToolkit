@@ -87,21 +87,24 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Domain\AnotherCommandImplementation.cs" />
+    <Compile Include="Domain\DataImportManagmentViewModel.cs" />
     <Compile Include="Domain\DocumentationLink.cs" />
     <Compile Include="Domain\DocumentationLinks.xaml.cs">
       <DependentUpon>DocumentationLinks.xaml</DependentUpon>
     </Compile>
     <Compile Include="Domain\DocumentationLinkType.cs" />
-    <Compile Include="Domain\IsCheckedValidationRule.cs" />
     <Compile Include="Domain\CommandButton.cs" />
+    <Compile Include="Domain\NotEmptyValidationRule.cs" />
+    <Compile Include="Domain\SampleProgressDialog.xaml.cs">
+      <DependentUpon>SampleProgressDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Domain\SolrCloudManagmentViewModel.cs" />
+    <Compile Include="Domain\SolrIndexManagmentViewModel.cs" />
+    <Compile Include="Domain\SolrServiceMangmentViewModel.cs" />
     <Compile Include="Domain\ZookeeperManagmentViewModel.cs" />
     <Compile Include="Domain\MainWindowViewModel.cs" />
-    <Compile Include="Domain\NotEmptyValidationRule.cs" />
     <Compile Include="Domain\NotifyPropertyChangedExtension.cs" />
     <Compile Include="Domain\Section.cs" />
-    <Compile Include="Domain\DialogsViewModel.cs" />
-    <Compile Include="Domain\ListsAndGridsViewModel.cs" />
     <Compile Include="Domain\Sample4Dialog.xaml.cs">
       <DependentUpon>Sample4Dialog.xaml</DependentUpon>
     </Compile>
@@ -112,16 +115,19 @@
     <Compile Include="Domain\SampleMessageDialog.xaml.cs">
       <DependentUpon>SampleMessageDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Domain\SampleProgressDialog.xaml.cs">
-      <DependentUpon>SampleProgressDialog.xaml</DependentUpon>
+    <Compile Include="DataImportManagment.xaml.cs">
+      <DependentUpon>DataImportManagment.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Domain\SelectableViewModel.cs" />
-    <Compile Include="Domain\SimpleDataTemplateSelector.cs" />
-    <Compile Include="Domain\SimpleDateValidationRule.cs" />
+    <Compile Include="SolrServiceManagment.xaml.cs">
+      <DependentUpon>SolrServiceManagment.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SolrCloudManagment.xaml.cs">
       <DependentUpon>SolrCloudManagment.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utils\ZookeeperExtensions.cs" />
+    <Compile Include="SolrIndexManagment.xaml.cs">
+      <DependentUpon>SolrIndexManagment.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ZookeeperManagment.xaml.cs">
       <DependentUpon>ZookeeperManagment.xaml</DependentUpon>
     </Compile>
@@ -145,10 +151,22 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Domain\SampleProgressDialog.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="DataImportManagment.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="SolrServiceManagment.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="SolrCloudManagment.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="SolrIndexManagment.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -213,9 +231,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\ProfilePic.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="ScreenGrabFromGoogle.gif" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Chartridge046_small.jpg" />

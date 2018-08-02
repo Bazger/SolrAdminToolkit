@@ -12,7 +12,7 @@ namespace ReindexAutomation.Client.Domain
 
             Sections = new[]
             {
-                new Section("Home", new Home(),
+                new Section("Home", "Home", new Home(),
                     new[]
                     {
                         new DocumentationLink(DocumentationLinkType.Wiki,
@@ -20,22 +20,11 @@ namespace ReindexAutomation.Client.Domain
                         DocumentationLink.DemoPageLink<Home>()
                     }
                 ),
-                new Section("SolrCloud Managment", new SolrCloudManagment{DataContext = new SolrCloudManagmentViewModel(snackbarMessageQueue)},
-                    new[]
-                    {
-                        new DocumentationLink(DocumentationLinkType.Wiki,
-                            $"{ConfigurationManager.AppSettings["GitHub"]}/wiki", "WIKI"),
-                        DocumentationLink.DemoPageLink<Home>()
-                    }
-                ),
-                new Section("Zookeper Managment", new ZookeeperManagment{DataContext = new ZookeeperManagmentViewModel(snackbarMessageQueue)},
-                    new[]
-                    {
-                        new DocumentationLink(DocumentationLinkType.Wiki,
-                            $"{ConfigurationManager.AppSettings["GitHub"]}/wiki", "WIKI"),
-                        DocumentationLink.DemoPageLink<Home>()
-                    }
-                )
+                new Section("SolrCloud","SolrCloud Managment", new SolrCloudManagment{DataContext = new SolrCloudManagmentViewModel(snackbarMessageQueue)}, null),
+                new Section("Index","Solr Index Managment", new SolrIndexManagment{DataContext = new SolrIndexManagmentViewModel(snackbarMessageQueue)}, null),
+                new Section("Service","Solr Service Managment", new SolrServiceManagment{DataContext = new SolrServiceMangmentViewModel(snackbarMessageQueue)}, null),
+                new Section("Data Import","Data Import Managment", new DataImportManagment{DataContext = new DataImportManagmentViewModel(snackbarMessageQueue)}, null),
+                new Section("Zookeeper","Zookeper Managment", new ZookeeperManagment{DataContext = new ZookeeperManagmentViewModel(snackbarMessageQueue)}, null)
             };
         }
 
