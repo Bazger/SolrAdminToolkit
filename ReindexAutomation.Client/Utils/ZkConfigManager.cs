@@ -24,15 +24,15 @@ namespace ReindexAutomation.Client.Utils
             this.zkClient = zkClient;
         }
 
-        //public void uploadConfigDir(string dir, string configName)
-        //{
-        //    zkClient.uploadToZK(dir, ConfigsZKnode + "/" + configName, UploadFilenameExcludeRegex);
-        //}
+        public void uploadConfigDir(string dir, string configName)
+        {
+            zkClient.uploadToZK(dir, ConfigsZKnode + "/" + configName, UploadFilenameExcludeRegex);
+        }
 
-        //public void uploadConfigDir(string dir, string configName, Regex filenameExclusions)
-        //{
-        //    zkClient.uploadToZK(dir, ConfigsZKnode + "/" + configName, filenameExclusions);
-        //}
+        public void uploadConfigDir(string dir, string configName, Regex filenameExclusions)
+        {
+            zkClient.uploadToZK(dir, ConfigsZKnode + "/" + configName, filenameExclusions);
+        }
 
         public void downloadConfigDir(string configName, string dir)
         {
@@ -75,6 +75,7 @@ namespace ReindexAutomation.Client.Utils
             }
         }
 
+
         public void deleteConfigDir(string configName)
         {
             try
@@ -91,7 +92,10 @@ namespace ReindexAutomation.Client.Utils
             }
         }
 
-        private async Task copyConfigDirFromZk(string fromZkPath, string toZkPath, HashSet<string> copiedToZkPaths)
+        //TODO: This func
+        //private void copyConfigDirFromZk
+
+        private async Task copyConfigDirFromZk(string fromZkPath, string toZkPath, ISet<string> copiedToZkPaths = null)
         {
             try
             {
@@ -103,9 +107,8 @@ namespace ReindexAutomation.Client.Utils
                     {
                         var toZkFilePath = toZkPath + "/" + file;
                         var data = await zkClient.getData(fromZkPath + "/" + file, null, null, true);
-                        //TODO: Uncoment this
-                        //zkClient.makePath(toZkFilePath, data, true);
-                        if (copiedToZkPaths != null) copiedToZkPaths.Add(toZkFilePath);
+                        await zkClient.makePath(toZkFilePath, data, true);
+                        copiedToZkPaths?.Add(toZkFilePath);
                     }
                     else
                     {

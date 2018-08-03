@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using org.apache.zookeeper;
 
 namespace ReindexAutomation.Client.Utils
@@ -15,7 +13,7 @@ namespace ReindexAutomation.Client.Utils
         public ZkCmdExecutor(int timeoutMillis)
         {
             _timeoutSeconds = timeoutMillis / 1000.0;
-            _retryCount = Math.Round(0.5f * ((float)Math.Sqrt(8.0f * timeoutMillis + 1.0f) - 1.0f)) + 1;
+            _retryCount = Math.Round(0.5f * ((float)Math.Sqrt(8.0f * _timeoutSeconds + 1.0f) - 1.0f)) + 1;
         }
 
         /// <summary>
@@ -23,14 +21,14 @@ namespace ReindexAutomation.Client.Utils
         /// </summary>
         /// <param name="operation">Operation for executing</param>
         /// <returns></returns>
-        public async Task<T> RetryOperation<T>(Func<Task<T>> operation)
+        public T RetryOperation<T>(Func<T> operation)
         {
             KeeperException exception = null;
             for (var i = 0; i < _retryCount; i++)
             {
                 try
                 {
-                    return await operation();
+                    return operation();
                 }
                 catch (KeeperException.ConnectionLossException e)
                 {
@@ -77,8 +75,7 @@ namespace ReindexAutomation.Client.Utils
             }
             try
             {
-                //TODO: Uncomment this shit
-                //zkClient.makePath(path, data, createMode, null, true, true, skipPathParts);
+                await zkClient.makePath(path, data, createMode, null, true, true, skipPathParts);
             }
             catch (KeeperException.NodeExistsException ex)
             {
