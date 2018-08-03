@@ -67,7 +67,7 @@
                     </ItemsControl.ItemContainerStyle>
                 </ItemsControl>
             </materialDesign:Card>
-            <materialDesign:Card Name="LinksCard"  Grid.Row="1" VerticalAlignment="Stretch" Padding="10 10 10 10" Margin="10 0 10 0" MinHeight="250" MaxHeight="250" materialDesign:ShadowAssist.ShadowDepth="Depth2" SizeChanged="LinksCard_OnSizeChanged">
+            <materialDesign:Card Name="LinksCard"  Grid.Row="1" VerticalAlignment="Stretch" Padding="10 10 10 10" Margin="10 0 10 0" MinHeight="230" MaxHeight="230" materialDesign:ShadowAssist.ShadowDepth="Depth2" SizeChanged="LinksCard_OnSizeChanged">
                 <TextBox
                         x:Name="LinksTextBox"
                         Style="{StaticResource MaterialDesignTextAreaTextBox}"

@@ -62,6 +62,9 @@
     <ApplicationIcon>favicon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PowerCollections, Version=1.0.2141.24679, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\Downloads\MaterialDesignInXamlToolkit-master\MaterialDesignInXamlToolkit-master\packages\XAct.Wintellect.PowerCollections.0.0.1\lib\net20\PowerCollections.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -124,6 +127,11 @@
     <Compile Include="SolrCloudManagment.xaml.cs">
       <DependentUpon>SolrCloudManagment.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Utils\SolrZkClient.cs" />
+    <Compile Include="Utils\VisitOreder.cs" />
+    <Compile Include="Utils\ZkCmdExecutor.cs" />
+    <Compile Include="Utils\ZkConfigManager.cs" />
+    <Compile Include="Utils\ZkMaintenanceUtils.cs" />
     <Compile Include="Utils\ZookeeperExtensions.cs" />
     <Compile Include="SolrIndexManagment.xaml.cs">
       <DependentUpon>SolrIndexManagment.xaml</DependentUpon>
@@ -230,9 +238,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\ProfilePic.jpg" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\Chartridge046_small.jpg" />
   </ItemGroup>
   <ItemGroup>
@@ -251,7 +256,6 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.2')">

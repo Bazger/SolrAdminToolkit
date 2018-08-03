@@ -60,7 +60,7 @@
                 </Grid.RowDefinitions>
                 <materialDesign:Card VerticalAlignment="Stretch" Padding="10 0 10 10" Margin="10 10 10 5" MinHeight="80" materialDesign:ShadowAssist.ShadowDepth="Depth2">
                     <StackPanel Orientation="Horizontal" Margin="0 0 0 10" HorizontalAlignment="Stretch">
-                        <TextBox Margin="0 0 10 0" Width="250" 
+                        <TextBox Margin="0 0 10 0" Width="285" 
                                          materialDesign:HintAssist.Hint="Configs direcotry"
                                          Text="{Binding ConfigsPath}">
                         </TextBox>
