@@ -7,9 +7,11 @@ namespace ReindexAutomation.Client.Utils
     public class ZkCmdExecutor
     {
         private const int RetryDelayMillis = 1500;
-        private double _timeoutSeconds;
+
+        private readonly double _timeoutSeconds;
         private readonly double _retryCount;
 
+        /// <param name="timeoutMillis">The client timeout for the ZooKeeper clients that will be used  with this class</param>
         public ZkCmdExecutor(int timeoutMillis)
         {
             _timeoutSeconds = timeoutMillis / 1000.0;
