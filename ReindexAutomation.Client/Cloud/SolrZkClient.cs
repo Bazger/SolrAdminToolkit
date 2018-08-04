@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -9,7 +8,7 @@ using System.Threading.Tasks;
 using org.apache.zookeeper;
 using org.apache.zookeeper.data;
 
-namespace ReindexAutomation.Client.Utils
+namespace ReindexAutomation.Client.Cloud
 {
     /// <summary>
     /// All Solr ZooKeeper interactions should go through this class rather than

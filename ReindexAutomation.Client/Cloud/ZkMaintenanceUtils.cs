@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using org.apache.zookeeper;
 using Wintellect.PowerCollections;
 
-namespace ReindexAutomation.Client.Utils
+namespace ReindexAutomation.Client.Cloud
 {
     //TODO: Work on Async
     //TODO: Work on InteruptException
@@ -522,6 +522,26 @@ namespace ReindexAutomation.Client.Utils
                 }
             }
             return ret;
+        }
+        
+        public static async Task<IEnumerable<string>> GetTree(this ZooKeeper zkCnxn, string zooPath = "/")
+        {
+            var children = (await zkCnxn.getChildrenAsync(zooPath)).Children;
+            var nodes = new List<string>();
+            if (!children.Any())
+            {
+                return nodes;
+            }
+            if (zooPath.Last() != '/')
+            {
+                zooPath += "/";
+            }
+            foreach (var child in children)
+            {
+                nodes.Add(zooPath + child);
+                nodes.AddRange(await GetTree(zkCnxn, zooPath + child));
+            }
+            return nodes;
         }
 
         private static string GetRelativePath(string filespec, string folder)

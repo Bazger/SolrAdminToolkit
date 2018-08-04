@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using org.apache.zookeeper;
 
-namespace ReindexAutomation.Client.Utils
+namespace ReindexAutomation.Client.Cloud
 {
     public class ZkConfigManager
     {

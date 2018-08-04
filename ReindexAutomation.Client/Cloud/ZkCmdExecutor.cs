@@ -2,7 +2,7 @@
 using System.Threading;
 using org.apache.zookeeper;
 
-namespace ReindexAutomation.Client.Utils
+namespace ReindexAutomation.Client.Cloud
 {
     public class ZkCmdExecutor
     {

@@ -127,12 +127,11 @@
     <Compile Include="SolrCloudManagment.xaml.cs">
       <DependentUpon>SolrCloudManagment.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Utils\SolrZkClient.cs" />
-    <Compile Include="Utils\VisitOreder.cs" />
-    <Compile Include="Utils\ZkCmdExecutor.cs" />
-    <Compile Include="Utils\ZkConfigManager.cs" />
-    <Compile Include="Utils\ZkMaintenanceUtils.cs" />
-    <Compile Include="Utils\ZookeeperExtensions.cs" />
+    <Compile Include="Cloud\SolrZkClient.cs" />
+    <Compile Include="Cloud\VisitOreder.cs" />
+    <Compile Include="Cloud\ZkCmdExecutor.cs" />
+    <Compile Include="Cloud\ZkConfigManager.cs" />
+    <Compile Include="Cloud\ZkMaintenanceUtils.cs" />
     <Compile Include="SolrIndexManagment.xaml.cs">
       <DependentUpon>SolrIndexManagment.xaml</DependentUpon>
     </Compile>
