@@ -523,10 +523,10 @@ namespace ReindexAutomation.Client.Cloud
             }
             return ret;
         }
-        
-        public static async Task<IEnumerable<string>> GetTree(this ZooKeeper zkCnxn, string zooPath = "/")
+
+        public static async Task<IEnumerable<string>> GetTree(SolrZkClient zkCnxn, string zooPath = "/")
         {
-            var children = (await zkCnxn.getChildrenAsync(zooPath)).Children;
+            var children = (await zkCnxn.getChildren(zooPath, null, false));
             var nodes = new List<string>();
             if (!children.Any())
             {

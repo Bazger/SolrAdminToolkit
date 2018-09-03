@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using ReindexAutomation.Client.Cloud;
 
 namespace ReindexAutomation.Client.Domain
 {
@@ -23,9 +24,15 @@ namespace ReindexAutomation.Client.Domain
         {
             _snackbarMessageQueue = snackbarMessageQueue;
             ApplyCommand = new AnotherCommandImplementation(_ => InitializeConfigsDirectory(ConfigsPath));
+            ConnectCommand = new AnotherCommandImplementation(async _ =>
+            {
+                var a = await Task.Run(() => ConnectToZkTree(ZkHost, ZkPort));
+                ZkNode.Clear();
+                ZkNode.Add(a);
+            });
             RootDirectories = new ObservableCollection<TreeViewDirectory>
             {
-                new TreeViewDirectory("C:\\Temp","C:\\")
+                new TreeViewDirectory("C:\\Temp", "C:\\")
                 {
                     Directories = new ObservableCollection<TreeViewDirectory> {new TreeViewDirectory("C:\\Temp\\A")},
                     Files = new ObservableCollection<TreeViewFile>
@@ -35,14 +42,19 @@ namespace ReindexAutomation.Client.Domain
                     }
                 }
             };
+            ZkNode = new ObservableCollection<TreeViewDirectory>();
         }
 
         public string ConfigsPath { get; set; }
+        public string ZkHost { get; set; }
+        public string ZkPort { get; set; }
 
         public ICommand ApplyCommand { get; }
+        public ICommand ConnectCommand { get; }
 
         private void InitializeConfigsDirectory(string path, int depth = 2)
         {
+            Debug.WriteLine(path);
             if (!Directory.Exists(path))
             {
                 _snackbarMessageQueue.Enqueue("Wrong Path!", "OK", () => Trace.WriteLine("Actioned"));
@@ -58,7 +70,30 @@ namespace ReindexAutomation.Client.Domain
             RootDirectories.Add(selectedDir);
         }
 
+        private TreeViewDirectory ConnectToZkTree(string zkHost, string zkPort)
+        {
+
+            using (var zkClient = new SolrZkClient($"{zkHost}:{zkPort}"))
+            {
+                try
+                {
+                    var nodes = ZkMaintenanceUtils.GetTree(zkClient).Result;
+                    var tree = new TreeViewDirectory("/", "/")
+                    {
+                        Directories = nodes.Select(n => new TreeViewDirectory(n)).ToList()
+                    };
+                    return tree;
+                }
+                catch (Exception ex)
+                {
+                    _snackbarMessageQueue.Enqueue("Could not connect to ZK host!", "OK", () => Trace.WriteLine("Actioned"));
+                }
+            }
+            return null;
+        }
+
         public ObservableCollection<TreeViewDirectory> RootDirectories { get; private set; }
+        public ObservableCollection<TreeViewDirectory> ZkNode { get; private set; }
 
 
         #region BUTTON PRESS CHECK

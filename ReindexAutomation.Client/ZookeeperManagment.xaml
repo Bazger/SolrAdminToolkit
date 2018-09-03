@@ -18,41 +18,88 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+    <ScrollViewer  VerticalScrollBarVisibility="Auto">
         <StackPanel VerticalAlignment="Stretch" MinWidth="980">
-            <materialDesign:Card VerticalAlignment="Stretch" Padding="10 10 10 13" Margin="10 3 10 0" materialDesign:ShadowAssist.ShadowDepth="Depth2">
-                <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Margin="0 10 0 5">
+            <materialDesign:Card Padding="10 0 20 5" Margin="10 3 10 0" materialDesign:ShadowAssist.ShadowDepth="Depth2">
+                <WrapPanel HorizontalAlignment="Center" Orientation="Horizontal" Margin="0 10 0 5">
                     <Button
-                            Style="{StaticResource MaterialDesignRaisedAccentButton}"
+                            Style="{StaticResource CommandButton}"
                             Command="{Binding RunDialogCommand}"
-                            Width="120"
                             ToolTip="Download configuration from zk"
-                            Margin="5 0 10 0">
+                            Margin="6 5 6 5">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="FolderDownload" />
-                            <TextBlock Text="DownConfig" Margin="8 0 0 0"/>
+                            <materialDesign:PackIcon Kind="FolderDownload" Width="20" Height="20"/>
+                            <TextBlock Text="DownConfig" Margin="8 0 0 0"  VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
-                    <materialDesign:Badged Badge="DANGER" BadgeColorZoneMode="Dark">
+                    <Button
+                        Style="{StaticResource CommandButton}"                            
+                        Command="{Binding RunExtendedDialogCommand}"
+                        ToolTip="Upload configuration to zk node(s)"
+                        Margin="6 5 6 5">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FolderUpload" Width="20" Height="20"/>
+                            <TextBlock Text="UpConfig" Margin="8 0 0 0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button
+                        Style="{StaticResource CommandButton}"                            
+                        Command="{Binding RunExtendedDialogCommand}"
+                        ToolTip="Make path on zk node(s)"
+                        Margin="6 5 6 5">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="FolderPlus"  Width="20" Height="20"/>
+                            <TextBlock Text="MakePath" Margin="8 0 0 0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button
+                        Style="{StaticResource CommandButton}"                            
+                        Command="{Binding RunExtendedDialogCommand}"
+                        ToolTip="Put file or directory to zk node(s)"
+                        Margin="6 5 6 5">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Upload" Width="20" Height="20"/>
+                            <TextBlock Text="Put" Margin="8 0 0 0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button
+                        Style="{StaticResource CommandButton}"                            
+                        Command="{Binding RunExtendedDialogCommand}"
+                        ToolTip="Get file or directory from zk node(s)"
+                        Margin="6 5 6 5">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Download" Width="20" Height="20"/>
+                            <TextBlock Text="Get" Margin="8 0 0 0"   VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button
+                        Style="{StaticResource CommandButton}"                            
+                        Command="{Binding RunExtendedDialogCommand}"
+                        ToolTip="Links Solr Collection to selected config"
+                        Margin="6 5 6 5">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="LinkVariant"   Width="20" Height="20"/>
+                            <TextBlock Text="LinkConfig" Margin="8 0 0 0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <materialDesign:Badged Badge="DANGER" BadgeColorZoneMode="Dark" Margin="6 5 6 5" Panel.ZIndex="1">
                         <Button
-                                Style="{StaticResource MaterialDesignRaisedAccentButton}"                            
-                                Width="120"
-                                Command="{Binding RunExtendedDialogCommand}"
-                                ToolTip="Upload configuration to zk"
-                                Margin="0 0 10 0">
+                            Style="{StaticResource CommandButton}"                            
+                            Command="{Binding RunExtendedDialogCommand}"
+                            ToolTip="Delete slected path (recursive) on zk">
                             <StackPanel Orientation="Horizontal">
-                                <materialDesign:PackIcon Kind="FolderUpload"/>
-                                <TextBlock Text="UpConfig" Margin="8 0 0 0"/>
+                                <materialDesign:PackIcon Kind="EraserVariant" Width="20" Height="20"/>
+                                <TextBlock Text="Clear" Margin="8 0 0 0"      VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </materialDesign:Badged>
-                </StackPanel>
+                </WrapPanel>
             </materialDesign:Card>
             <Grid HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="4*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="4*"/>
+                    <ColumnDefinition Width="4*" MinWidth="455" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="4*" MinWidth="465"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
@@ -60,10 +107,16 @@
                 </Grid.RowDefinitions>
                 <materialDesign:Card VerticalAlignment="Stretch" Padding="10 0 10 10" Margin="10 10 10 5" MinHeight="80" materialDesign:ShadowAssist.ShadowDepth="Depth2">
                     <StackPanel Orientation="Horizontal" Margin="0 0 0 10" HorizontalAlignment="Stretch">
-                        <TextBox Margin="0 0 10 0" Width="285" 
-                                         materialDesign:HintAssist.Hint="Configs direcotry"
-                                         Text="{Binding ConfigsPath}">
-                        </TextBox>
+                        <ComboBox
+                            VerticalAlignment="Bottom"
+                            materialDesign:HintAssist.Hint="Configs dir"
+                            ToolTip="Locate to configs directory"
+                            IsEditable="True"
+                            Width="285"
+                            Margin="0 0 10 0"
+                            Text="{Binding Path=ConfigsPath}"
+                            Style="{StaticResource MaterialDesignFloatingHintComboBox}">
+                        </ComboBox>
                         <Button Style="{StaticResource MaterialDesignRaisedButton}" VerticalAlignment="Bottom" 
                                         Width="100"
                                         Command="{Binding ApplyCommand}"
@@ -75,7 +128,7 @@
                         </Button>
                     </StackPanel>
                 </materialDesign:Card>
-                <materialDesign:Card VerticalAlignment="Stretch"  Grid.Row="1" Padding="10 10 10 10" Margin="10 0 10 0" MinHeight="400"  materialDesign:ShadowAssist.ShadowDepth="Depth2">
+                <materialDesign:Card VerticalAlignment="Stretch"  Grid.Row="1" Padding="10 10 10 10" Margin="10 0 10 0" MinHeight="400" materialDesign:ShadowAssist.ShadowDepth="Depth2">
                     <StackPanel Orientation="Vertical">
                         <TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}" Margin="0 0 0 5">Configs:</TextBlock>
                         <Separator
@@ -105,7 +158,7 @@
                         </TreeView>
                     </StackPanel>
                 </materialDesign:Card>
-                <DockPanel Grid.Row="1" Grid.Column="1"  MinWidth="100">
+                <DockPanel Grid.Row="1" Grid.Column="1"  MinWidth="100" VerticalAlignment="Center" HorizontalAlignment="Center">
                     <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center">
                         <materialDesign:PackIcon Kind="ArrowLeftThick" Width="48" Height="48"/>
                         <materialDesign:PackIcon Kind="ArrowRightThick" Width="48" Height="48"/>
@@ -119,18 +172,10 @@
                                 IsEditable="True"
                                 Width="160"
                                 Margin="0 0 10 0"
+                                Text="{Binding Path=ZkHost}"
                                 Style="{StaticResource MaterialDesignFloatingHintComboBox}">
                             <ComboBoxItem>
-                                Apple
-                            </ComboBoxItem>
-                            <ComboBoxItem>
-                                Banana
-                            </ComboBoxItem>
-                            <ComboBoxItem>
-                                Pear
-                            </ComboBoxItem>
-                            <ComboBoxItem>
-                                Orange
+                                localhost
                             </ComboBoxItem>
                         </ComboBox>
                         <TextBlock VerticalAlignment="Bottom" Margin="0 0 10 5">:</TextBlock>
@@ -138,14 +183,19 @@
                                     Width="100"
                                     materialDesign:HintAssist.Hint="Port"
                                     IsEditable="True"
+                                    Text="{Binding Path=ZkPort}"
                                     Style="{StaticResource MaterialDesignFloatingHintComboBox}">
                             <ComboBoxItem>
-                                2123
+                                2181
+                            </ComboBoxItem>
+                            <ComboBoxItem>
+                                10001
                             </ComboBoxItem>
                         </ComboBox>
                         <Button Style="{StaticResource MaterialDesignRaisedButton}" VerticalAlignment="Bottom"
-                                    Width="110"
-                                    ToolTip="Connecting to entered zk host">
+                                Width="110"
+                                ToolTip="Connecting to entered zk host"
+                                Command="{Binding ConnectCommand}">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="LanConnect" />
                                 <TextBlock Text="Connect" Margin="8 0 0 0"/>
@@ -159,29 +209,27 @@
                         <Separator
                             Style="{StaticResource MaterialDesignDarkSeparator}"
                             Margin="8 0 8 0" />
-                        <TreeView MinWidth="220" MaxWidth="1000" MaxHeight="500">
-                            <TreeViewItem Header="Fruit">
-                                <TreeViewItem>
-                                    <TreeViewItem.Header>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Viewbox Width="16" Height="16">
-                                                <Canvas Width="24" Height="24">
-                                                    <Path Data="M20,10C22,13 17,22 15,22C13,22 13,21 12,21C11,21 11,22 9,22C7,22 2,13 4,10C6,7 9,7 11,8V5C5.38,8.07 4.11,3.78 4.11,3.78C4.11,3.78 6.77,0.19 11,5V3H13V8C15,7 18,7 20,10Z" 
-                                                              Fill="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type TreeViewItem}}, Path=Foreground}" />
-                                                </Canvas>
-                                            </Viewbox>
-                                            <TextBlock Margin="8 0 0 0">Apple</TextBlock>
-                                        </StackPanel>
-                                    </TreeViewItem.Header>
-                                </TreeViewItem>
-                                <TreeViewItem Header="Banana"/>
-                                <TreeViewItem Header="Grape">
-                                    <TextBlock><Run Text="Grapes for us"/></TextBlock>
-                                </TreeViewItem>
-                                <TreeViewItem Header="Peach"/>
-                                <TreeViewItem Header="Pear"/>
-                                <TreeViewItem Header="Strawberry"/>
-                            </TreeViewItem>
+                        <TreeView ItemsSource="{Binding ZkNode}" MinWidth="220" MinHeight="300" MaxHeight="500"  MaxWidth="1000">
+                            <TreeView.Resources>
+                                <HierarchicalDataTemplate DataType="{x:Type domain:TreeViewDirectory}"
+                                                          ItemsSource="{Binding Items}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon x:Name="img" Kind="Folder"/>
+                                        <TextBlock Text="{Binding Path=Name}" Margin="3 2"   ToolTip="{Binding Path}"/>
+                                    </StackPanel>
+                                    <HierarchicalDataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding IsExpanded, RelativeSource={RelativeSource AncestorType={x:Type TreeViewItem}}}" Value="True">
+                                            <Setter TargetName="img" Property="Kind" Value="FolderOpen"/>
+                                        </DataTrigger>
+                                    </HierarchicalDataTemplate.Triggers>
+                                </HierarchicalDataTemplate>
+                                <DataTemplate DataType="{x:Type  domain:TreeViewFile}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <materialDesign:PackIcon Kind="FileOutline" />
+                                        <TextBlock Text="{Binding Path=Name}" Margin="3 2" ToolTip="{Binding Path}"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </TreeView.Resources>
                         </TreeView>
                     </StackPanel>
                 </materialDesign:Card>
