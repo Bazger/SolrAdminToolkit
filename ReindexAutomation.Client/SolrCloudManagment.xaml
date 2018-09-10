@@ -96,8 +96,8 @@
                             </StackPanel>
                         </Button>
                         <Button
-                            Style="{StaticResource MaterialDesignRaisedAccentButton}"
-                            Command="{Binding CommandButton}"
+                            Style="{StaticResource CommandButton}"
+                            Command="{Binding RunDialogCommand}"
                             Margin="6 5 6 5">
                             <StackPanel Orientation="Horizontal">
                                 <materialDesign:PackIcon Kind="ContentCopy" VerticalAlignment="Center" Width="20" Height="20"/>

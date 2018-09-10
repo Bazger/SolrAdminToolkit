@@ -10,16 +10,16 @@ namespace ReindexAutomation.Client.Domain
     /// <summary>
     /// No WPF project is complete without it's own version of this.
     /// </summary>
-    public class AnotherCommandImplementation : ICommand
+    public class RelayCommand : ICommand
     {
         private readonly Action<object> _execute;
         private readonly Func<object, bool> _canExecute;
 
-        public AnotherCommandImplementation(Action<object> execute) : this(execute, null)
+        public RelayCommand(Action<object> execute) : this(execute, null)
         {
         }
 
-        public AnotherCommandImplementation(Action<object> execute, Func<object, bool> canExecute)
+        public RelayCommand(Action<object> execute, Func<object, bool> canExecute)
         {
             if (execute == null) throw new ArgumentNullException(nameof(execute));
 

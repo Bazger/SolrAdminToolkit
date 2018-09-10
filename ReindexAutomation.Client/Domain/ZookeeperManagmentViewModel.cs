@@ -6,9 +6,11 @@ using System.Windows.Controls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -16,41 +18,94 @@ using ReindexAutomation.Client.Cloud;
 
 namespace ReindexAutomation.Client.Domain
 {
-    public class ZookeeperManagmentViewModel
+    public class ZookeeperManagmentViewModel : INotifyPropertyChanged
     {
         private readonly ISnackbarMessageQueue _snackbarMessageQueue;
+
+        private bool _isDirectorySelected;
+        private bool _isFileSelected;
+        private bool _isDirectoryTreeItemSelected;
+
+        private bool _isZkConfigSelected;
+        private bool _isZkPathSelected;
 
         public ZookeeperManagmentViewModel(ISnackbarMessageQueue snackbarMessageQueue)
         {
             _snackbarMessageQueue = snackbarMessageQueue;
-            ApplyCommand = new AnotherCommandImplementation(_ => InitializeConfigsDirectory(ConfigsPath));
-            ConnectCommand = new AnotherCommandImplementation(async _ =>
+            ZkNode = new ObservableCollection<TreeViewDirectory>();
+            RootDirectories = new ObservableCollection<TreeViewDirectory>();
+
+            InitializeConfigsDirectory("C:\\Windows");
+
+            ApplyCommand = new RelayCommand(_ => InitializeConfigsDirectory(ConfigsPath));
+            ConnectCommand = new RelayCommand(async _ =>
             {
                 var a = await Task.Run(() => ConnectToZkTree(ZkHost, ZkPort));
                 ZkNode.Clear();
                 ZkNode.Add(a);
             });
-            RootDirectories = new ObservableCollection<TreeViewDirectory>
-            {
-                new TreeViewDirectory("C:\\Temp", "C:\\")
-                {
-                    Directories = new ObservableCollection<TreeViewDirectory> {new TreeViewDirectory("C:\\Temp\\A")},
-                    Files = new ObservableCollection<TreeViewFile>
-                    {
-                        new TreeViewFile("C:\\Temp\\BB.txt"),
-                        new TreeViewFile("C:\\Temp\\CC.txt")
-                    }
-                }
-            };
-            ZkNode = new ObservableCollection<TreeViewDirectory>();
+            DirectoriesTreeSelectedItemChangedCommand = new RelayCommand(DirectoryTree_SelectedItemChanged);
+            ZkTreeSelectedItemChangedCommand = new RelayCommand(ZkTree_SelectedItemChanged);
         }
 
         public string ConfigsPath { get; set; }
         public string ZkHost { get; set; }
         public string ZkPort { get; set; }
 
+        public bool IsDirectorySelected
+        {
+            get { return _isDirectorySelected; }
+            set
+            {
+                this.MutateVerbose(ref _isDirectorySelected, value, RaisePropertyChanged());
+            }
+        }
+
+        public bool IsFileSelected
+        {
+            get { return _isFileSelected; }
+            set
+            {
+                this.MutateVerbose(ref _isFileSelected, value, RaisePropertyChanged());
+            }
+        }
+
+        public bool IsDirectoryTreeItemSelected
+        {
+            get { return _isDirectoryTreeItemSelected; }
+            set
+            {
+                this.MutateVerbose(ref _isDirectoryTreeItemSelected, value, RaisePropertyChanged());
+            }
+        }
+
+        public bool IsZkConfigSelected
+        {
+            get { return _isZkConfigSelected; }
+            set
+            {
+                this.MutateVerbose(ref _isZkConfigSelected, value, RaisePropertyChanged());
+            }
+        }
+
+        public bool IsZkPathSelected
+        {
+            get { return _isZkPathSelected; }
+            set
+            {
+                this.MutateVerbose(ref _isZkPathSelected, value, RaisePropertyChanged());
+            }
+        }
+
         public ICommand ApplyCommand { get; }
         public ICommand ConnectCommand { get; }
+        public ICommand DirectoriesTreeSelectedItemChangedCommand { get; }
+        public ICommand ZkTreeSelectedItemChangedCommand { get; }
+
+
+        public ObservableCollection<TreeViewDirectory> RootDirectories { get; }
+        public ObservableCollection<TreeViewDirectory> ZkNode { get; }
+
 
         private void InitializeConfigsDirectory(string path, int depth = 2)
         {
@@ -72,19 +127,13 @@ namespace ReindexAutomation.Client.Domain
 
         private TreeViewDirectory ConnectToZkTree(string zkHost, string zkPort)
         {
-
             using (var zkClient = new SolrZkClient($"{zkHost}:{zkPort}"))
             {
                 try
                 {
-                    var nodes = ZkMaintenanceUtils.GetTree(zkClient).Result;
-                    var tree = new TreeViewDirectory("/", "/")
-                    {
-                        Directories = nodes.Select(n => new TreeViewDirectory(n)).ToList()
-                    };
-                    return tree;
+                    return GetZkTree(zkClient).Result;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     _snackbarMessageQueue.Enqueue("Could not connect to ZK host!", "OK", () => Trace.WriteLine("Actioned"));
                 }
@@ -92,22 +141,89 @@ namespace ReindexAutomation.Client.Domain
             return null;
         }
 
-        public ObservableCollection<TreeViewDirectory> RootDirectories { get; private set; }
-        public ObservableCollection<TreeViewDirectory> ZkNode { get; private set; }
+        private static async Task<TreeViewDirectory> GetZkTree(SolrZkClient zkCnxn, string zooPath = "/", int depth = 2)
+        {
+            var children = (await zkCnxn.getChildren(zooPath, null, false));
+            if (!children.Any())
+            {
+                return null;
+            }
+            var dir = zooPath.Split('/').Length <= depth ? new TreeViewDirectory(zooPath, zooPath) : new TreeViewDirectory(zooPath);
+
+            if (zooPath.Last() != '/')
+            {
+                zooPath += "/";
+            }
+            var files = new List<TreeViewFile>();
+            var dirs = new List<TreeViewDirectory>();
+            foreach (var child in children)
+            {
+                var entry = await GetZkTree(zkCnxn, zooPath + child);
+                if (entry == null)
+                {
+                    files.Add(new TreeViewFile(child));
+                }
+                else
+                {
+                    dirs.Add(entry);
+                }
+            }
+
+            dir.Directories = dirs;
+            dir.Files = files;
+
+            return dir;
+        }
+
+        private void DirectoryTree_SelectedItemChanged(object args)
+        {
+            IsDirectoryTreeItemSelected = true;
+            if (args is TreeViewDirectory)
+            {
+                IsDirectorySelected = true;
+                IsFileSelected = false;
+            }
+            else
+            {
+                IsDirectorySelected = false;
+                IsFileSelected = true;
+            }
+        }
+
+        private void ZkTree_SelectedItemChanged(object args)
+        {
+            IsZkPathSelected = true;
+            if (args is TreeViewDirectory)
+            {
+                var dir = args as TreeViewDirectory;
+                if (dir.Path.ToLower().Contains("configs") && dir.Path.Split('/').Length == 3)
+                {
+                    IsZkConfigSelected = true;
+                }
+            }
+            else
+            {
+                IsZkConfigSelected = false;
+            }
+        }
 
 
         #region BUTTON PRESS CHECK
 
-        public ICommand RunDialogCommand => new AnotherCommandImplementation(ExecuteRunDialog);
+        public ICommand RunDialogCommand => new RelayCommand(ExecuteRunDialog);
 
-        public ICommand RunExtendedDialogCommand => new AnotherCommandImplementation(ExecuteRunExtendedDialog);
+        public ICommand RunExtendedDialogCommand => new RelayCommand(ExecuteRunExtendedDialog);
 
         private async void ExecuteRunDialog(object o)
         {
             //let's set up a little MVVM, cos that's what the cool kids are doing:
-            var view = new SampleDialog
+            var view = new UpConfigDialog
             {
-                DataContext = new SampleDialogViewModel()
+                DataContext = new ConfigDialogViewModel
+                {
+                    SelectedConfigName = "BicepsConfig",
+                    AvailableConfigs = new ObservableCollection<string> { "BicepsConfig" }
+                }
             };
 
             //show the dialog
@@ -161,6 +277,12 @@ namespace ReindexAutomation.Client.Domain
 
         #endregion
 
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private Action<PropertyChangedEventArgs> RaisePropertyChanged()
+        {
+            return args => PropertyChanged?.Invoke(this, args);
+        }
     }
 
 

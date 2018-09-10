@@ -62,6 +62,9 @@
     <ApplicationIcon>favicon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Expression.Interactions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\Downloads\MaterialDesignInXamlToolkit-master\MaterialDesignInXamlToolkit-master\packages\System.Windows.Interactivity.WPF.2.0.20525\lib\net40\Microsoft.Expression.Interactions.dll</HintPath>
+    </Reference>
     <Reference Include="PowerCollections, Version=1.0.2141.24679, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\..\..\..\Downloads\MaterialDesignInXamlToolkit-master\MaterialDesignInXamlToolkit-master\packages\XAct.Wintellect.PowerCollections.0.0.1\lib\net20\PowerCollections.dll</HintPath>
     </Reference>
@@ -70,6 +73,9 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows.Interactivity, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\Downloads\MaterialDesignInXamlToolkit-master\MaterialDesignInXamlToolkit-master\packages\System.Windows.Interactivity.WPF.2.0.20525\lib\net40\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -89,7 +95,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Domain\AnotherCommandImplementation.cs" />
+    <Compile Include="Domain\RelayCommand.cs" />
     <Compile Include="Domain\DataImportManagmentViewModel.cs" />
     <Compile Include="Domain\DocumentationLink.cs" />
     <Compile Include="Domain\DocumentationLinks.xaml.cs">
@@ -98,12 +104,16 @@
     <Compile Include="Domain\DocumentationLinkType.cs" />
     <Compile Include="Domain\CommandButton.cs" />
     <Compile Include="Domain\NotEmptyValidationRule.cs" />
+    <Compile Include="Domain\ConfigDialogViewModel.cs" />
     <Compile Include="Domain\SampleProgressDialog.xaml.cs">
       <DependentUpon>SampleProgressDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Domain\SolrCloudManagmentViewModel.cs" />
     <Compile Include="Domain\SolrIndexManagmentViewModel.cs" />
     <Compile Include="Domain\SolrServiceMangmentViewModel.cs" />
+    <Compile Include="Domain\UpConfigDialog.xaml.cs">
+      <DependentUpon>UpConfigDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Domain\ZookeeperManagmentViewModel.cs" />
     <Compile Include="Domain\MainWindowViewModel.cs" />
     <Compile Include="Domain\NotifyPropertyChangedExtension.cs" />
@@ -121,6 +131,7 @@
     <Compile Include="DataImportManagment.xaml.cs">
       <DependentUpon>DataImportManagment.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="SolrServiceManagment.xaml.cs">
       <DependentUpon>SolrServiceManagment.xaml</DependentUpon>
     </Compile>
@@ -164,6 +175,10 @@
     <Page Include="DataImportManagment.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Domain\UpConfigDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="SolrServiceManagment.xaml">
       <Generator>MSBuild:Compile</Generator>

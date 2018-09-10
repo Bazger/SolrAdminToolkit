@@ -17,7 +17,7 @@ namespace ReindexAutomation.Client.Domain
             Label = label ?? type.ToString();
             Url = url;
             Type = type;
-            Open = new AnotherCommandImplementation(Execute);
+            Open = new RelayCommand(Execute);
         }        
 
         public static DocumentationLink WikiLink(string page, string label)
