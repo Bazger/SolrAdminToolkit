@@ -56,9 +56,9 @@ namespace ReindexAutomation.Client.Cloud
         /// <param name="configName">The config to download</param>
         /// <param name="dir">The path to write files under</param>
         /// <exception cref="IOException">If an I/O error occurs or the config does not exist</exception>
-        public void downloadConfigDir(string configName, string dir)
+        public async Task downloadConfigDir(string configName, string dir)
         {
-            zkClient.downloadFromZK(ConfigsZKnode + "/" + configName, dir);
+            await zkClient.downloadFromZK(ConfigsZKnode + "/" + configName, dir);
         }
 
         public async Task<List<string>> listConfigs()

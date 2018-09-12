@@ -95,6 +95,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Converters\BooleanOrConverter.cs" />
+    <Compile Include="Converters\BooleanAndConverter.cs" />
     <Compile Include="Domain\RelayCommand.cs" />
     <Compile Include="Domain\DataImportManagmentViewModel.cs" />
     <Compile Include="Domain\DocumentationLink.cs" />
@@ -111,6 +113,9 @@
     <Compile Include="Domain\SolrCloudManagmentViewModel.cs" />
     <Compile Include="Domain\SolrIndexManagmentViewModel.cs" />
     <Compile Include="Domain\SolrServiceMangmentViewModel.cs" />
+    <Compile Include="Domain\DownConfigDialog.xaml.cs">
+      <DependentUpon>DownConfigDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Domain\UpConfigDialog.xaml.cs">
       <DependentUpon>UpConfigDialog.xaml</DependentUpon>
     </Compile>
@@ -131,7 +136,6 @@
     <Compile Include="DataImportManagment.xaml.cs">
       <DependentUpon>DataImportManagment.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="SolrServiceManagment.xaml.cs">
       <DependentUpon>SolrServiceManagment.xaml</DependentUpon>
     </Compile>
@@ -146,6 +150,7 @@
     <Compile Include="SolrIndexManagment.xaml.cs">
       <DependentUpon>SolrIndexManagment.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Utils\FileHelper.cs" />
     <Compile Include="ZookeeperManagment.xaml.cs">
       <DependentUpon>ZookeeperManagment.xaml</DependentUpon>
     </Compile>
@@ -173,6 +178,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="DataImportManagment.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Domain\DownConfigDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -270,6 +279,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.2')">

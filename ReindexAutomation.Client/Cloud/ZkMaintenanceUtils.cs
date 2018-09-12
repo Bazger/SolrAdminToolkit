@@ -239,12 +239,12 @@ namespace ReindexAutomation.Client.Cloud
         #endregion
 
         // This not just a copy operation since the config manager takes care of construction the znode path to configsets
-        public static void downConfig(SolrZkClient zkClient, string confName, string confPath)
+        public static async Task downConfig(SolrZkClient zkClient, string confName, string confPath)
         {
             var manager = new ZkConfigManager(zkClient);
 
             // Try to download the configset
-            manager.downloadConfigDir(confName, confPath);
+            await manager.downloadConfigDir(confName, confPath);
         }
 
         // This not just a copy operation since the config manager takes care of construction the znode path to configsets
@@ -397,7 +397,7 @@ namespace ReindexAutomation.Client.Cloud
             return data.Length;
         }
 
-        public static async void downloadFromZK(SolrZkClient zkClient, string zkPath, string filePath)
+        public static async Task downloadFromZK(SolrZkClient zkClient, string zkPath, string filePath)
         {
             try
             {
@@ -419,7 +419,6 @@ namespace ReindexAutomation.Client.Cloud
                                                          // ZK nodes, whether leaf or not can have data. If it's a non-leaf node and
                                                          // has associated data write it into the special file.
                     await copyDataDown(zkClient, zkPath, Path.Combine(filePath, ZKNODE_DATA_FILE));
-
                     foreach (var child in children)
                     {
                         var zkChild = zkPath;
@@ -434,7 +433,7 @@ namespace ReindexAutomation.Client.Cloud
                             continue;
                         }
                         // Go deeper into the tree now
-                        downloadFromZK(zkClient, zkChild, Path.Combine(filePath, child));
+                        await downloadFromZK(zkClient, zkChild, Path.Combine(filePath, child));
                     }
                 }
             }

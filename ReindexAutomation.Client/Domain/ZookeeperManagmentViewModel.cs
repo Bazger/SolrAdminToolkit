@@ -1,7 +1,4 @@
-﻿using System.Configuration;
-using ReindexAutomation.Client.Domain;
-using MaterialDesignThemes.Wpf;
-using MaterialDesignThemes.Wpf.Transitions;
+﻿using MaterialDesignThemes.Wpf;
 using System.Windows.Controls;
 using System;
 using System.Collections.Generic;
@@ -10,14 +7,21 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
 using ReindexAutomation.Client.Cloud;
+using ReindexAutomation.Client.Utils;
 
 namespace ReindexAutomation.Client.Domain
 {
+    //TODO: Add treeview right click menu
+    //TODO: Add option to opent ZK file in notepad (Double click on file)
+    //TODO: Add option to copy directory
+    //TODO: Get directory for 2nd layer
+    //TODO: Add caution for bad dirs
+    //TODO: Zk Node and Host make stable 
+    //TODO: Clear and LinkConfig buttons
+
     public class ZookeeperManagmentViewModel : INotifyPropertyChanged
     {
         private readonly ISnackbarMessageQueue _snackbarMessageQueue;
@@ -26,8 +30,12 @@ namespace ReindexAutomation.Client.Domain
         private bool _isFileSelected;
         private bool _isDirectoryTreeItemSelected;
 
+        private TreeViewDirectory _selectedDirectory;
+        private TreeViewDirectory _selectedZkConfig;
+
         private bool _isZkConfigSelected;
         private bool _isZkPathSelected;
+        private bool _isZkConnected;
 
         public ZookeeperManagmentViewModel(ISnackbarMessageQueue snackbarMessageQueue)
         {
@@ -35,14 +43,15 @@ namespace ReindexAutomation.Client.Domain
             ZkNode = new ObservableCollection<TreeViewDirectory>();
             RootDirectories = new ObservableCollection<TreeViewDirectory>();
 
-            InitializeConfigsDirectory("C:\\Windows");
+            ConfigsPath = "C:\\Temp";
+            InitializeStartupDirectory(ConfigsPath);
 
-            ApplyCommand = new RelayCommand(_ => InitializeConfigsDirectory(ConfigsPath));
+            ApplyCommand = new RelayCommand(_ => InitializeStartupDirectory(ConfigsPath));
             ConnectCommand = new RelayCommand(async _ =>
             {
-                var a = await Task.Run(() => ConnectToZkTree(ZkHost, ZkPort));
+                var tree = await Task.Run(() => ConnectToZkTree(ZkHost, ZkPort));
                 ZkNode.Clear();
-                ZkNode.Add(a);
+                ZkNode.Add(tree);
             });
             DirectoriesTreeSelectedItemChangedCommand = new RelayCommand(DirectoryTree_SelectedItemChanged);
             ZkTreeSelectedItemChangedCommand = new RelayCommand(ZkTree_SelectedItemChanged);
@@ -79,6 +88,15 @@ namespace ReindexAutomation.Client.Domain
             }
         }
 
+        public bool IsZkConnected
+        {
+            get { return _isZkConnected; }
+            set
+            {
+                this.MutateVerbose(ref _isZkConnected, value, RaisePropertyChanged());
+            }
+        }
+
         public bool IsZkConfigSelected
         {
             get { return _isZkConfigSelected; }
@@ -102,12 +120,10 @@ namespace ReindexAutomation.Client.Domain
         public ICommand DirectoriesTreeSelectedItemChangedCommand { get; }
         public ICommand ZkTreeSelectedItemChangedCommand { get; }
 
-
         public ObservableCollection<TreeViewDirectory> RootDirectories { get; }
         public ObservableCollection<TreeViewDirectory> ZkNode { get; }
 
-
-        private void InitializeConfigsDirectory(string path, int depth = 2)
+        private void InitializeStartupDirectory(string path, int depth = 2)
         {
             Debug.WriteLine(path);
             if (!Directory.Exists(path))
@@ -131,11 +147,14 @@ namespace ReindexAutomation.Client.Domain
             {
                 try
                 {
-                    return GetZkTree(zkClient).Result;
+                    var tree = GetZkTree(zkClient).Result;
+                    IsZkConnected = true;
+                    return tree;
                 }
                 catch (Exception)
                 {
                     _snackbarMessageQueue.Enqueue("Could not connect to ZK host!", "OK", () => Trace.WriteLine("Actioned"));
+                    IsZkConnected = false;
                 }
             }
             return null;
@@ -178,101 +197,192 @@ namespace ReindexAutomation.Client.Domain
         private void DirectoryTree_SelectedItemChanged(object args)
         {
             IsDirectoryTreeItemSelected = true;
-            if (args is TreeViewDirectory)
+            if (args is TreeViewDirectory directory)
             {
+                _selectedDirectory = directory;
                 IsDirectorySelected = true;
                 IsFileSelected = false;
             }
             else
             {
                 IsDirectorySelected = false;
-                IsFileSelected = true;
+                _selectedDirectory = null;
+                if (args is TreeViewFile)
+                {
+                    IsFileSelected = true;
+                    return;
+                }
+                IsFileSelected = false;
+                IsDirectoryTreeItemSelected = false;
             }
         }
 
         private void ZkTree_SelectedItemChanged(object args)
         {
             IsZkPathSelected = true;
-            if (args is TreeViewDirectory)
+            if (args is TreeViewDirectory zkDirectory && zkDirectory.Path.ToLower().Contains("configs") && zkDirectory.Path.Split('/').Length == 3)
             {
-                var dir = args as TreeViewDirectory;
-                if (dir.Path.ToLower().Contains("configs") && dir.Path.Split('/').Length == 3)
-                {
-                    IsZkConfigSelected = true;
-                }
+                IsZkConfigSelected = true;
+                _selectedZkConfig = zkDirectory;
             }
             else
             {
                 IsZkConfigSelected = false;
+                _selectedZkConfig = null;
+                if (args is TreeViewFile || args is TreeViewDirectory)
+                {
+                    return;
+                }
+                IsZkPathSelected = false;
             }
         }
 
+        #region DownConfig
 
-        #region BUTTON PRESS CHECK
+        public ICommand DownConfigDialogCommand => new RelayCommand(ExecuteDownConfigDialog);
 
-        public ICommand RunDialogCommand => new RelayCommand(ExecuteRunDialog);
-
-        public ICommand RunExtendedDialogCommand => new RelayCommand(ExecuteRunExtendedDialog);
-
-        private async void ExecuteRunDialog(object o)
+        private async void ExecuteDownConfigDialog(object o)
         {
-            //let's set up a little MVVM, cos that's what the cool kids are doing:
-            var view = new UpConfigDialog
+            var configName = Path.GetFileName(_selectedZkConfig.Name);
+            var path = Path.Combine(/*_selectedDirectory?.Path ?? */RootDirectories[0].Path, configName);
+
+            //let's set up a little MVVM, cos that's what the cool kids are doing:        
+            var context = new ConfigDialogViewModel
             {
-                DataContext = new ConfigDialogViewModel
-                {
-                    SelectedConfigName = "BicepsConfig",
-                    AvailableConfigs = new ObservableCollection<string> { "BicepsConfig" }
-                }
+                Directory = path,
+                ConfigName = configName,
+                AvailableDirectories = new ObservableCollection<string> { path },
+                AvailableConfigs = new ObservableCollection<string> { configName }
+            };
+            var view = new DownConfigDialog
+            {
+                DataContext = context
             };
 
             //show the dialog
-            var result = await DialogHost.Show(view, "RootDialog", ClosingEventHandler);
+            var result = await DialogHost.Show(view, "RootDialog", DownConfigClosingEventHandler);
 
             //check the result...
-            Console.WriteLine("Dialog was closed, the CommandParameter used to close it was: " + (result ?? "NULL"));
+            Debug.WriteLine("Dialog was closed, the CommandParameter used to close it was: " + (result ?? "NULL"));
         }
 
-        private void ClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
+        private async void DownConfigClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
         {
-            Console.WriteLine("You can intercept the closing event, and cancel here.");
-        }
+            if ((bool)eventArgs.Parameter == false) { return; }
 
-        private async void ExecuteRunExtendedDialog(object o)
-        {
-            //let's set up a little MVVM, cos that's what the cool kids are doing:
-            var view = new SampleDialog
+            var dialogModel = (eventArgs.Session.Content as UserControl)?.DataContext as ConfigDialogViewModel;
+            var dir = dialogModel?.Directory;
+            var configName = dialogModel?.ConfigName;
+
+            if (string.IsNullOrEmpty(dir) || string.IsNullOrEmpty(configName))
             {
-                DataContext = new SampleDialogViewModel()
-            };
-
-            //show the dialog
-            var result = await DialogHost.Show(view, "RootDialog", ExtendedOpenedEventHandler, ExtendedClosingEventHandler);
-
-            //check the result...
-            Console.WriteLine("Dialog was closed, the CommandParameter used to close it was: " + (result ?? "NULL"));
-        }
-
-        private void ExtendedOpenedEventHandler(object sender, DialogOpenedEventArgs eventargs)
-        {
-            Console.WriteLine("You could intercept the open and affect the dialog using eventArgs.Session.");
-        }
-
-        private void ExtendedClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
-        {
-            if ((bool)eventArgs.Parameter == false) return;
+                //TODO: Throw the snackbar
+                return;
+            }
 
             //OK, lets cancel the close...
             eventArgs.Cancel();
 
             //...now, lets update the "session" with some new content!
             eventArgs.Session.UpdateContent(new SampleProgressDialog());
-            //note, you can also grab the session when the dialog opens via the DialogOpenedEventHandler
+            //note, you can also grab the session when the dialog opens via the DialogOpenedEventHandler            
 
             //lets run a fake operation for 3 seconds then close this baby.
-            Task.Delay(TimeSpan.FromSeconds(3))
-                .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
-                    TaskScheduler.FromCurrentSynchronizationContext());
+            await Task.Run(async () =>
+            {
+                using (var zkClient = new SolrZkClient($"{ZkHost}:{ZkPort}"))
+                {
+                    try
+                    {
+                        await zkClient.downConfig(configName, dir);
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO: Show error;
+                    }
+                }
+            }).ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+                TaskScheduler.FromCurrentSynchronizationContext());
+            InitializeStartupDirectory(RootDirectories[0].Path);
+        }
+
+        #endregion
+
+
+        #region UpConfig
+
+        public ICommand UpConfigDialogCommand => new RelayCommand(ExecuteUpConfigDialog);
+
+        private async void ExecuteUpConfigDialog(object o)
+        {
+            var configName = Path.GetFileName(_selectedDirectory.Name);
+            if (!configName.ToLower().Contains("config"))
+            {
+                configName += "Config";
+            }
+            var path = _selectedDirectory.Path;//FileHelper.MinimizePath(_selectedDirectory.Path, 60);
+
+
+            //let's set up a little MVVM, cos that's what the cool kids are doing:        
+            var context = new ConfigDialogViewModel
+            {
+                Directory = path,
+                ConfigName = configName,
+                AvailableDirectories = new ObservableCollection<string> { path },
+                AvailableConfigs = new ObservableCollection<string> { configName }
+            };
+            var view = new UpConfigDialog
+            {
+                DataContext = context
+            };
+
+            //show the dialog
+            var result = await DialogHost.Show(view, "RootDialog", UpConfigClosingEventHandler);
+
+            //check the result...
+            Debug.WriteLine("Dialog was closed, the CommandParameter used to close it was: " + (result ?? "NULL"));
+        }
+
+        private async void UpConfigClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
+        {
+            if ((bool)eventArgs.Parameter == false) { return; }
+
+            var dialogModel = (eventArgs.Session.Content as UserControl)?.DataContext as ConfigDialogViewModel;
+            var dir = dialogModel?.Directory;
+            var configName = dialogModel?.ConfigName;
+
+            if (string.IsNullOrEmpty(dir) || string.IsNullOrEmpty(configName))
+            {
+                //TODO: Throw the snackbar
+                return;
+            }
+
+            //OK, lets cancel the close...
+            eventArgs.Cancel();
+
+            //...now, lets update the "session" with some new content!
+            eventArgs.Session.UpdateContent(new SampleProgressDialog());
+            //note, you can also grab the session when the dialog opens via the DialogOpenedEventHandler            
+
+            //lets run a fake operation for 3 seconds then close this baby.
+            await Task.Run(() =>
+            {
+                using (var zkClient = new SolrZkClient($"{ZkHost}:{ZkPort}"))
+                {
+                    try
+                    {
+                        zkClient.upConfig(dir, configName);
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO: Show error;
+                    }
+                }
+            }).ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+                TaskScheduler.FromCurrentSynchronizationContext());
+            var tree = await Task.Run(() => ConnectToZkTree(ZkHost, ZkPort));
+            ZkNode.Clear();
+            ZkNode.Add(tree);
         }
 
         #endregion

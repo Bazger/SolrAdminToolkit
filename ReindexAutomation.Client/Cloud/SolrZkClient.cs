@@ -533,9 +533,9 @@ namespace ReindexAutomation.Client.Cloud
             return await ZkMaintenanceUtils.listZnode(this, path, recurse);
         }
 
-        public void downConfig(string confName, string confPath)
+        public async Task downConfig(string confName, string confPath)
         {
-            ZkMaintenanceUtils.downConfig(this, confName, confPath);
+            await ZkMaintenanceUtils.downConfig(this, confName, confPath);
         }
 
         public async Task zkTransfer(string src, bool srcIsZk, string dst, bool dstIsZk, bool recurse)
@@ -553,9 +553,9 @@ namespace ReindexAutomation.Client.Cloud
             ZkMaintenanceUtils.uploadToZK(this, rootPath, zkPath, filenameExclusions);
         }
 
-        public void downloadFromZK(string zkPath, string dir)
+        public async Task downloadFromZK(string zkPath, string dir)
         {
-            ZkMaintenanceUtils.downloadFromZK(this, zkPath, dir);
+            await ZkMaintenanceUtils.downloadFromZK(this, zkPath, dir);
         }
 
         public void Dispose()
