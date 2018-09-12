@@ -15,7 +15,7 @@
             </ResourceDictionary.MergedDictionaries>
             <Style TargetType="Button" x:Key="CommandButton" BasedOn="{StaticResource MaterialDesignRaisedAccentButton}">
                 <Setter Property="Height" Value="40"/>
-                <Setter Property="Width" Value="135"/>
+                <Setter Property="Width"  Value="140"/>
                 <Setter Property="materialDesign:ShadowAssist.ShadowDepth" Value="Depth2"/>
             </Style>
         </ResourceDictionary>

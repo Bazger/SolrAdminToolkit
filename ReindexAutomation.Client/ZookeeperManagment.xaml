@@ -28,7 +28,7 @@
                     <Button
                             Style="{StaticResource CommandButton}"
                             Command="{Binding DownConfigDialogCommand}"
-                            IsEnabled="{Binding Path=IsZkConfigSelected}"
+                            IsEnabled="{Binding Path=IsZkConnected}"
                             ToolTip="Download configuration from zk"
                             Margin="6 5 6 5">
                         <StackPanel Orientation="Horizontal">
@@ -146,7 +146,7 @@
                         </Button>
                     </StackPanel>
                 </materialDesign:Card>
-                <materialDesign:Card VerticalAlignment="Stretch"  Grid.Row="1" Padding="10 10 10 10" Margin="10 0 10 0" MinHeight="400" materialDesign:ShadowAssist.ShadowDepth="Depth2">
+                <materialDesign:Card VerticalAlignment="Stretch"  Grid.Row="1" Grid.Column="0" Padding="10 10 10 10" Margin="10 0 10 0" MinHeight="400" materialDesign:ShadowAssist.ShadowDepth="Depth2">
                     <StackPanel Orientation="Vertical">
                         <TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}" Margin="0 0 0 5">Configs:</TextBlock>
                         <Separator
@@ -158,6 +158,27 @@
                                     <i:InvokeCommandAction Command="{Binding DirectoriesTreeSelectedItemChangedCommand}" CommandParameter="{Binding ElementName=DirectoriesTree, Path=SelectedItem}"/>
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
+                            <TreeView.ItemContainerStyle>
+                                <Style TargetType="{x:Type TreeViewItem}"  BasedOn="{StaticResource MaterialDesignTreeViewItem}">
+                                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                                    <Setter Property="ContextMenu">
+                                        <Setter.Value>
+                                            <ContextMenu>
+                                                <MenuItem Header="Open" Command="{Binding OpenDirectoryCommand}" Visibility="{Binding OpenDirectoryMenuItemVisibility}" >
+                                                    <MenuItem.Icon>
+                                                        <materialDesign:PackIcon Kind="ArrowRightThick"/>
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
+                                                <MenuItem Header="Back" Command="{Binding BackToPreviousCommand}" Visibility="{Binding BackToPreviousMenuItemVisibility}" >
+                                                    <MenuItem.Icon>
+                                                        <materialDesign:PackIcon Kind="ArrowLeftThick"/>
+                                                    </MenuItem.Icon>
+                                                </MenuItem>
+                                            </ContextMenu>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </TreeView.ItemContainerStyle>
                             <TreeView.Resources>
                                 <HierarchicalDataTemplate DataType="{x:Type domain:TreeViewDirectory}"
                                                                   ItemsSource="{Binding Items}">
@@ -187,7 +208,7 @@
                         <materialDesign:PackIcon Kind="ArrowRightThick" Width="48" Height="48"/>
                     </StackPanel>
                 </DockPanel>
-                <materialDesign:Card Grid.Column="2" VerticalAlignment="Stretch"  Padding="10 0 10 10" Margin="10 10 10 5" materialDesign:ShadowAssist.ShadowDepth="Depth2">
+                <materialDesign:Card Grid.Row="0" Grid.Column="2" VerticalAlignment="Stretch"  Padding="10 0 10 10" Margin="10 10 10 5" materialDesign:ShadowAssist.ShadowDepth="Depth2">
                     <StackPanel  Orientation="Horizontal" Margin="0 0 0 10" HorizontalAlignment="Left">
                         <ComboBox
                                 VerticalAlignment="Bottom"
@@ -238,6 +259,11 @@
                                     <i:InvokeCommandAction Command="{Binding ZkTreeSelectedItemChangedCommand}" CommandParameter="{Binding ElementName=ZkTree, Path=SelectedItem}"/>
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
+                            <TreeView.ItemContainerStyle>
+                                <Style TargetType="{x:Type TreeViewItem}"  BasedOn="{StaticResource MaterialDesignTreeViewItem}">
+                                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                                </Style>
+                            </TreeView.ItemContainerStyle>
                             <TreeView.Resources>
                                 <HierarchicalDataTemplate DataType="{x:Type domain:TreeViewDirectory}"
                                                           ItemsSource="{Binding Items}">

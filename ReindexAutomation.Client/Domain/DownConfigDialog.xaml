@@ -7,6 +7,7 @@
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              xmlns:materialDesignDemo="clr-namespace:ReindexAutomation.Client"
              xmlns:domain="clr-namespace:ReindexAutomation.Client.Domain"
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" MaxWidth="600">
     <Grid Margin="16">
@@ -21,11 +22,16 @@
         <Separator
             Grid.Row="1"
             Style="{StaticResource MaterialDesignDarkSeparator}" Height="3" />
-        <TextBox Grid.Row="2" Margin="3 20 3 0" VerticalAlignment="Bottom"
+        <ComboBox Grid.Row="2" Margin="3 20 3 0" VerticalAlignment="Bottom"
                   wpf:HintAssist.Hint="Config name"               
-                  Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                  IsReadOnly="True" Text="{Binding Path=ConfigName}">
-        </TextBox>
+                  Style="{StaticResource MaterialDesignFloatingHintComboBox}"
+                  IsEditable="False" ItemsSource="{Binding Path=AvailableConfigs}"  SelectedValue="{Binding Path=ConfigName}">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="SelectionChanged">
+                    <i:InvokeCommandAction Command="{Binding ConfigNameChanged}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </ComboBox>
         <ComboBox Grid.Row="3" Margin="3 20 3 0" VerticalAlignment="Bottom"                
                   wpf:HintAssist.Hint="Directory"                          
                   Style="{StaticResource MaterialDesignFloatingHintComboBox}"

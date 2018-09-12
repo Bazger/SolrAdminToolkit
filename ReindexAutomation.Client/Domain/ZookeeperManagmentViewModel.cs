@@ -8,16 +8,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using ReindexAutomation.Client.Cloud;
-using ReindexAutomation.Client.Utils;
 
 namespace ReindexAutomation.Client.Domain
 {
-    //TODO: Add treeview right click menu
-    //TODO: Add option to opent ZK file in notepad (Double click on file)
-    //TODO: Add option to copy directory
-    //TODO: Get directory for 2nd layer
+    //TODO: Add option to open ZK file in notepad (Double click on file)
+    //TODO: Open directory in browser
     //TODO: Add caution for bad dirs
     //TODO: Zk Node and Host make stable 
     //TODO: Clear and LinkConfig buttons
@@ -25,6 +23,8 @@ namespace ReindexAutomation.Client.Domain
     public class ZookeeperManagmentViewModel : INotifyPropertyChanged
     {
         private readonly ISnackbarMessageQueue _snackbarMessageQueue;
+
+        private string _configsPath;
 
         private bool _isDirectorySelected;
         private bool _isFileSelected;
@@ -44,20 +44,18 @@ namespace ReindexAutomation.Client.Domain
             RootDirectories = new ObservableCollection<TreeViewDirectory>();
 
             ConfigsPath = "C:\\Temp";
-            InitializeStartupDirectory(ConfigsPath);
-
-            ApplyCommand = new RelayCommand(_ => InitializeStartupDirectory(ConfigsPath));
-            ConnectCommand = new RelayCommand(async _ =>
-            {
-                var tree = await Task.Run(() => ConnectToZkTree(ZkHost, ZkPort));
-                ZkNode.Clear();
-                ZkNode.Add(tree);
-            });
-            DirectoriesTreeSelectedItemChangedCommand = new RelayCommand(DirectoryTree_SelectedItemChanged);
-            ZkTreeSelectedItemChangedCommand = new RelayCommand(ZkTree_SelectedItemChanged);
+            InitializeConfigsDirectory(ConfigsPath);
         }
 
-        public string ConfigsPath { get; set; }
+        public string ConfigsPath
+        {
+            get { return _configsPath; }
+            set
+            {
+                this.MutateVerbose(ref _configsPath, value, RaisePropertyChanged());
+            }
+        }
+
         public string ZkHost { get; set; }
         public string ZkPort { get; set; }
 
@@ -115,27 +113,46 @@ namespace ReindexAutomation.Client.Domain
             }
         }
 
-        public ICommand ApplyCommand { get; }
-        public ICommand ConnectCommand { get; }
-        public ICommand DirectoriesTreeSelectedItemChangedCommand { get; }
-        public ICommand ZkTreeSelectedItemChangedCommand { get; }
+        public ICommand ApplyCommand => new RelayCommand(_ => InitializeConfigsDirectory(ConfigsPath));
+        public ICommand ConnectCommand => new RelayCommand(async _ =>
+        {
+            var tree = await Task.Run(() => ConnectToZkTree(ZkHost, ZkPort));
+            ZkNode.Clear();
+            ZkNode.Add(tree);
+        });
+
+        public ICommand DirectoriesTreeSelectedItemChangedCommand => new RelayCommand(DirectoryTree_SelectedItemChanged);
+        public ICommand ZkTreeSelectedItemChangedCommand => new RelayCommand(ZkTree_SelectedItemChanged);
 
         public ObservableCollection<TreeViewDirectory> RootDirectories { get; }
         public ObservableCollection<TreeViewDirectory> ZkNode { get; }
 
-        private void InitializeStartupDirectory(string path, int depth = 2)
+        private void InitializeConfigsDirectory(string path)
         {
+            if (Path.GetPathRoot(path) != path)
+            {
+                path = path.TrimEnd('\\');
+            }
             Debug.WriteLine(path);
             if (!Directory.Exists(path))
             {
                 _snackbarMessageQueue.Enqueue("Wrong Path!", "OK", () => Trace.WriteLine("Actioned"));
                 return;
             }
+            ConfigsPath = path;
             var selectedDir = new TreeViewDirectory(path, path)
             {
-                Directories = Directory.GetDirectories(path).Select(p => new TreeViewDirectory(p)),
-                Files = Directory.GetFiles(path).Select(p => new TreeViewFile(p))
+                Directories = Directory.GetDirectories(path).Select(p => new TreeViewDirectory(p)).ToList(),
+                Files = Directory.GetFiles(path).Select(p => new TreeViewFile(p)).ToList(),
+                IsExpanded = true,
+                BackToPreviousMenuItemVisibility = Visibility.Visible
             };
+            selectedDir.OpenDirectoryEvent += OpenDirectory;
+            selectedDir.BackToPreviousEvent += BackToPrevious;
+            foreach (var dir in selectedDir.Directories)
+            {
+                dir.OpenDirectoryEvent += OpenDirectory;
+            }
 
             RootDirectories.Clear();
             RootDirectories.Add(selectedDir);
@@ -149,6 +166,7 @@ namespace ReindexAutomation.Client.Domain
                 {
                     var tree = GetZkTree(zkClient).Result;
                     IsZkConnected = true;
+                    tree.IsExpanded = true;
                     return tree;
                 }
                 catch (Exception)
@@ -237,14 +255,33 @@ namespace ReindexAutomation.Client.Domain
             }
         }
 
+        private void OpenDirectory(object sender, EventArgs args)
+        {
+            if (sender is TreeViewDirectory dir)
+            {
+                InitializeConfigsDirectory(dir.Path);
+            }
+        }
+
+        private void BackToPrevious(object sender, EventArgs args)
+        {
+            if (sender is TreeViewDirectory dir)
+            {
+                var previousDir = Path.GetDirectoryName(dir.Path);
+                InitializeConfigsDirectory(previousDir);
+            }
+        }
+
         #region DownConfig
 
         public ICommand DownConfigDialogCommand => new RelayCommand(ExecuteDownConfigDialog);
 
         private async void ExecuteDownConfigDialog(object o)
         {
-            var configName = Path.GetFileName(_selectedZkConfig.Name);
-            var path = Path.Combine(/*_selectedDirectory?.Path ?? */RootDirectories[0].Path, configName);
+            var configs = ZkNode[0].Directories.ToList().FirstOrDefault(dir => dir.Name.ToLower().Contains("configs"))?
+                .Directories.Select(config => config.Name).ToList();
+            var configName = Path.GetFileName(_selectedZkConfig?.Name ?? configs?.FirstOrDefault());
+            var path = Path.Combine(/*_selectedDirectory?.Path ?? */RootDirectories[0].Path, configName ?? string.Empty);
 
             //let's set up a little MVVM, cos that's what the cool kids are doing:        
             var context = new ConfigDialogViewModel
@@ -252,7 +289,7 @@ namespace ReindexAutomation.Client.Domain
                 Directory = path,
                 ConfigName = configName,
                 AvailableDirectories = new ObservableCollection<string> { path },
-                AvailableConfigs = new ObservableCollection<string> { configName }
+                AvailableConfigs = configs != null ? new ObservableCollection<string>(configs) : new ObservableCollection<string>()
             };
             var view = new DownConfigDialog
             {
@@ -303,7 +340,7 @@ namespace ReindexAutomation.Client.Domain
                 }
             }).ContinueWith((t, _) => eventArgs.Session.Close(false), null,
                 TaskScheduler.FromCurrentSynchronizationContext());
-            InitializeStartupDirectory(RootDirectories[0].Path);
+            InitializeConfigsDirectory(RootDirectories[0].Path);
         }
 
         #endregion
@@ -396,7 +433,7 @@ namespace ReindexAutomation.Client.Domain
     }
 
 
-    public class TreeViewDirectory
+    public class TreeViewDirectory : IContextMenu
     {
         public string Path { get; }
         public string Name { get; }
@@ -409,12 +446,16 @@ namespace ReindexAutomation.Client.Domain
         {
             Path = path;
             Name = name;
+            IsExpanded = false;
+            OpenDirectoryMenuItemVisibility = Visibility.Visible;
+            BackToPreviousMenuItemVisibility = Visibility.Collapsed;
 
             Directories = new List<TreeViewDirectory>();
             Files = new List<TreeViewFile>();
         }
-        public IEnumerable<TreeViewDirectory> Directories { get; set; }
-        public IEnumerable<TreeViewFile> Files { get; set; }
+
+        public IList<TreeViewDirectory> Directories { get; set; }
+        public IList<TreeViewFile> Files { get; set; }
 
         public IEnumerable<object> Items
         {
@@ -423,13 +464,30 @@ namespace ReindexAutomation.Client.Domain
                 var childNodes = new List<object>();
                 childNodes.AddRange(Directories);
                 childNodes.AddRange(Files);
-
                 return childNodes;
             }
         }
+
+        public bool IsExpanded { get; set; }
+
+
+        public event EventHandler OpenDirectoryEvent;
+        public event EventHandler BackToPreviousEvent;
+
+        public ICommand OpenDirectoryCommand => new RelayCommand(_ => OpenDirectoryEvent?.Invoke(this, null));
+        public ICommand BackToPreviousCommand => new RelayCommand(_ => BackToPreviousEvent?.Invoke(this, null));
+
+        public Visibility OpenDirectoryMenuItemVisibility { get; set; }
+        public Visibility BackToPreviousMenuItemVisibility { get; set; }
     }
 
-    public class TreeViewFile
+    public interface IContextMenu
+    {
+        Visibility OpenDirectoryMenuItemVisibility { get; set; }
+        Visibility BackToPreviousMenuItemVisibility { get; set; }
+    }
+
+    public class TreeViewFile : IContextMenu
     {
         public string Path { get; }
         public string Name { get; }
@@ -438,6 +496,11 @@ namespace ReindexAutomation.Client.Domain
         {
             Path = path;
             Name = System.IO.Path.GetFileName(path);
+            OpenDirectoryMenuItemVisibility = Visibility.Collapsed;
+            BackToPreviousMenuItemVisibility = Visibility.Collapsed;
         }
+
+        public Visibility OpenDirectoryMenuItemVisibility { get; set; }
+        public Visibility BackToPreviousMenuItemVisibility { get; set; }
     }
 }
