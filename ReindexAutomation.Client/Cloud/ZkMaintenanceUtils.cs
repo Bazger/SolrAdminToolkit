@@ -141,7 +141,7 @@ namespace ReindexAutomation.Client.Cloud
             // ZK -> local copy where ZK is a parent node
             if ((await zkClient.getChildren(src, null, true)).Any())
             {
-                downloadFromZK(zkClient, src, dst);
+                await downloadFromZK(zkClient, src, dst);
                 return;
             }
 

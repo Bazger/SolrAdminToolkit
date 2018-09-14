@@ -54,7 +54,8 @@
                     </Button>
                     <Button
                         Style="{StaticResource CommandButton}"                            
-                        Command="{Binding RunExtendedDialogCommand}"
+                        Command="{Binding MakePathDialogCommand}"
+                        IsEnabled="{Binding Path=IsZkConnected}"
                         ToolTip="Make path on zk node(s)"
                         Margin="6 5 6 5">
                         <StackPanel Orientation="Horizontal">

@@ -31,7 +31,7 @@ namespace ReindexAutomation.Client.Domain
         private bool _isDirectoryTreeItemSelected;
 
         private TreeViewDirectory _selectedDirectory;
-        private TreeViewDirectory _selectedZkConfig;
+        private string _selectedZkPath;
 
         private bool _isZkConfigSelected;
         private bool _isZkPathSelected;
@@ -198,7 +198,7 @@ namespace ReindexAutomation.Client.Domain
                 var entry = await GetZkTree(zkCnxn, zooPath + child);
                 if (entry == null)
                 {
-                    files.Add(new TreeViewFile(child));
+                    files.Add(new TreeViewFile(zooPath + child, child));
                 }
                 else
                 {
@@ -215,22 +215,21 @@ namespace ReindexAutomation.Client.Domain
         private void DirectoryTree_SelectedItemChanged(object args)
         {
             IsDirectoryTreeItemSelected = true;
+            IsFileSelected = false;
+            _selectedDirectory = null;
+            IsDirectorySelected = false;
             if (args is TreeViewDirectory directory)
             {
                 _selectedDirectory = directory;
                 IsDirectorySelected = true;
-                IsFileSelected = false;
             }
             else
             {
-                IsDirectorySelected = false;
-                _selectedDirectory = null;
                 if (args is TreeViewFile)
                 {
                     IsFileSelected = true;
                     return;
                 }
-                IsFileSelected = false;
                 IsDirectoryTreeItemSelected = false;
             }
         }
@@ -238,17 +237,22 @@ namespace ReindexAutomation.Client.Domain
         private void ZkTree_SelectedItemChanged(object args)
         {
             IsZkPathSelected = true;
-            if (args is TreeViewDirectory zkDirectory && zkDirectory.Path.ToLower().Contains("configs") && zkDirectory.Path.Split('/').Length == 3)
+            IsZkConfigSelected = false;
+            _selectedZkPath = null;
+            if (args is TreeViewDirectory zkDirectory)
             {
-                IsZkConfigSelected = true;
-                _selectedZkConfig = zkDirectory;
+                _selectedZkPath = zkDirectory.Path;
+                if (zkDirectory.Path.ToLower().Contains("configs") && zkDirectory.Path.Split('/').Length == 3)
+                {
+                    IsZkConfigSelected = true;
+                }
             }
             else
             {
-                IsZkConfigSelected = false;
-                _selectedZkConfig = null;
-                if (args is TreeViewFile || args is TreeViewDirectory)
+                if (args is TreeViewFile zkFile)
                 {
+                    //TODO: save full path
+                    _selectedZkPath = zkFile.Path;
                     return;
                 }
                 IsZkPathSelected = false;
@@ -280,7 +284,8 @@ namespace ReindexAutomation.Client.Domain
         {
             var configs = ZkNode[0].Directories.ToList().FirstOrDefault(dir => dir.Name.ToLower().Contains("configs"))?
                 .Directories.Select(config => config.Name).ToList();
-            var configName = Path.GetFileName(_selectedZkConfig?.Name ?? configs?.FirstOrDefault());
+            var selectedZkConfig = IsZkConfigSelected ? _selectedZkPath : null;
+            var configName = Path.GetFileName(selectedZkConfig ?? configs?.FirstOrDefault());
             var path = Path.Combine(/*_selectedDirectory?.Path ?? */RootDirectories[0].Path, configName ?? string.Empty);
 
             //let's set up a little MVVM, cos that's what the cool kids are doing:        
@@ -297,10 +302,7 @@ namespace ReindexAutomation.Client.Domain
             };
 
             //show the dialog
-            var result = await DialogHost.Show(view, "RootDialog", DownConfigClosingEventHandler);
-
-            //check the result...
-            Debug.WriteLine("Dialog was closed, the CommandParameter used to close it was: " + (result ?? "NULL"));
+            await DialogHost.Show(view, "RootDialog", DownConfigClosingEventHandler);
         }
 
         private async void DownConfigClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
@@ -340,11 +342,11 @@ namespace ReindexAutomation.Client.Domain
                 }
             }).ContinueWith((t, _) => eventArgs.Session.Close(false), null,
                 TaskScheduler.FromCurrentSynchronizationContext());
+            //TODO: Do if ex was not throwen
             InitializeConfigsDirectory(RootDirectories[0].Path);
         }
 
         #endregion
-
 
         #region UpConfig
 
@@ -374,10 +376,7 @@ namespace ReindexAutomation.Client.Domain
             };
 
             //show the dialog
-            var result = await DialogHost.Show(view, "RootDialog", UpConfigClosingEventHandler);
-
-            //check the result...
-            Debug.WriteLine("Dialog was closed, the CommandParameter used to close it was: " + (result ?? "NULL"));
+            await DialogHost.Show(view, "RootDialog", UpConfigClosingEventHandler);
         }
 
         private async void UpConfigClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
@@ -417,12 +416,98 @@ namespace ReindexAutomation.Client.Domain
                 }
             }).ContinueWith((t, _) => eventArgs.Session.Close(false), null,
                 TaskScheduler.FromCurrentSynchronizationContext());
+            //TODO: Do if ex was not throwen
             var tree = await Task.Run(() => ConnectToZkTree(ZkHost, ZkPort));
             ZkNode.Clear();
             ZkNode.Add(tree);
         }
 
         #endregion
+
+        #region MakePath
+
+        public ICommand MakePathDialogCommand => new RelayCommand(ExecuteMakePathDialog);
+
+        private async void ExecuteMakePathDialog(object o)
+        {
+            //let's set up a little MVVM, cos that's what the cool kids are doing:
+            var context = new SampleDialogViewModel
+            {
+                Name = _selectedZkPath ?? "/"
+            };
+            var view = new MakePathDialog
+            {
+                DataContext = context
+            };
+
+            //show the dialog
+            var result = await DialogHost.Show(view, "RootDialog");
+
+            //check the result...
+            if (result != null && (bool)result)
+            {
+                using (var zkClient = new SolrZkClient($"{ZkHost}:{ZkPort}"))
+                {
+                    try
+                    {
+                        await zkClient.makePath(context.Name, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO: Show error;
+                    }
+                }
+                //TODO: Do if ex was not throwens
+                var tree = await Task.Run(() => ConnectToZkTree(ZkHost, ZkPort));
+                ZkNode.Clear();
+                ZkNode.Add(tree);
+            }
+        }
+
+        #endregion
+
+        #region Clear
+
+        public ICommand ClearDialogCommand => new RelayCommand(ExecuteMakePathDialog);
+
+        private async void ExecuteClearDialog(object o)
+        {
+            //let's set up a little MVVM, cos that's what the cool kids are doing:
+            var context = new SampleDialogViewModel
+            {
+                Name = _selectedZkPath ?? "/"
+            };
+            var view = new MakePathDialog
+            {
+                DataContext = context
+            };
+
+            //show the dialog
+            var result = await DialogHost.Show(view, "RootDialog");
+
+            //check the result...
+            if (result != null && (bool)result)
+            {
+                using (var zkClient = new SolrZkClient($"{ZkHost}:{ZkPort}"))
+                {
+                    try
+                    {
+                        await zkClient.makePath(context.Name, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO: Show error;
+                    }
+                }
+                //TODO: Do if ex was not throwens
+                var tree = await Task.Run(() => ConnectToZkTree(ZkHost, ZkPort));
+                ZkNode.Clear();
+                ZkNode.Add(tree);
+            }
+        }
+
+        #endregion   
+
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -492,10 +577,14 @@ namespace ReindexAutomation.Client.Domain
         public string Path { get; }
         public string Name { get; }
 
-        public TreeViewFile(string path)
+        public TreeViewFile(string path) : this(path, System.IO.Path.GetFileName(path))
+        {
+        }
+
+        public TreeViewFile(string path, string name)
         {
             Path = path;
-            Name = System.IO.Path.GetFileName(path);
+            Name = name;
             OpenDirectoryMenuItemVisibility = Visibility.Collapsed;
             BackToPreviousMenuItemVisibility = Visibility.Collapsed;
         }

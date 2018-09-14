@@ -116,6 +116,9 @@
     <Compile Include="Domain\DownConfigDialog.xaml.cs">
       <DependentUpon>DownConfigDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Domain\MakePathDialog.xaml.cs">
+      <DependentUpon>MakePathDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Domain\UpConfigDialog.xaml.cs">
       <DependentUpon>UpConfigDialog.xaml</DependentUpon>
     </Compile>
@@ -182,6 +185,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Domain\DownConfigDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Domain\MakePathDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
