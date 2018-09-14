@@ -14,7 +14,7 @@ namespace ReindexAutomation.Client.Cloud
     {
         private const string ConfigsZKnode = "/configs";
 
-        public static readonly Regex UploadFilenameExcludeRegex = new Regex("^\\..*$");
+        private static readonly Regex UploadFilenameExcludeRegex = new Regex("^\\..*$");
 
         private readonly SolrZkClient zkClient;
 
@@ -67,7 +67,7 @@ namespace ReindexAutomation.Client.Cloud
             {
                 return await zkClient.getChildren(ConfigsZKnode, null, true);
             }
-            catch (KeeperException.NoNodeException ex)
+            catch (KeeperException.NoNodeException)
             {
                 return new List<string>();
             }
@@ -108,11 +108,11 @@ namespace ReindexAutomation.Client.Cloud
         /// </summary>
         /// <param name="configName">The config to delete</param>
         /// <exception cref="IOException">If an I/O error occurs</exception> 
-        public void deleteConfigDir(string configName)
+        public async Task deleteConfigDir(string configName)
         {
             try
             {
-                zkClient.clean(ConfigsZKnode + "/" + configName);
+                await zkClient.clean(ConfigsZKnode + "/" + configName);
             }
             catch (Exception ex)
             {

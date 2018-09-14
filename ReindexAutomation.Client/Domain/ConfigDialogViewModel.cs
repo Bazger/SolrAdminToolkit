@@ -4,8 +4,7 @@ using System.Windows.Input;
 
 namespace ReindexAutomation.Client.Domain
 {
-    //TODO: Reanme the base class
-    public class ConfigDialogViewModel : SampleDialogViewModel
+    public class ConfigDialogViewModel : CommonDialogViewModel
     {
         private string _configName;
         private string _directory;

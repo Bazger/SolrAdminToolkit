@@ -4,7 +4,7 @@ using ReindexAutomation.Client.Domain;
 
 namespace ReindexAutomation.Client.Domain
 {
-    public class SampleDialogViewModel : INotifyPropertyChanged
+    public class CommonDialogViewModel : INotifyPropertyChanged
     {
         private string _name;
 
