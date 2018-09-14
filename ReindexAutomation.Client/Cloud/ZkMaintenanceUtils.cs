@@ -56,7 +56,7 @@ namespace ReindexAutomation.Client.Cloud
                 return sb.ToString();
             }
 
-            traverseZkTree(zkClient, root, VISIT_ORDER.VISIT_PRE, znode =>
+            await traverseZkTree(zkClient, root, VISIT_ORDER.VISIT_PRE, znode =>
             {
                 if (znode.StartsWith("/zookeeper")) return; // can't do anything with this node!
                 int iPos = znode.LastIndexOf("/");
@@ -116,7 +116,7 @@ namespace ReindexAutomation.Client.Cloud
             // ZK -> ZK copy.
             if (srcIsZk && dstIsZk)
             {
-                traverseZkTree(zkClient, src, VISIT_ORDER.VISIT_PRE, async path =>
+                await traverseZkTree(zkClient, src, VISIT_ORDER.VISIT_PRE, async path =>
                 {
                     var finalDestination = dst;
                     if (path.Equals(src) == false)
@@ -202,7 +202,7 @@ namespace ReindexAutomation.Client.Cloud
             }
             else
             {
-                traverseZkTree(zkClient, src, VISIT_ORDER.VISIT_PRE, async path =>
+                await traverseZkTree(zkClient, src, VISIT_ORDER.VISIT_PRE, async path =>
                 {
                     var finalDestination = dst;
                     if (path.Equals(src) == false)
@@ -218,7 +218,7 @@ namespace ReindexAutomation.Client.Cloud
             // throws error if not all there so the source is left intact. Throws error if source and dest don't match.
             await checkAllZnodesThere(zkClient, src, destName);
 
-            clean(zkClient, src);
+            await clean(zkClient, src);
         }
 
 
@@ -256,53 +256,27 @@ namespace ReindexAutomation.Client.Cloud
             manager.uploadConfigDir(confPath, confName);
         }
 
-        // yeah, it's recursive :(
-        public static void clean(SolrZkClient zkClient, string path)
-        {
-            traverseZkTree(zkClient, path, VISIT_ORDER.VISIT_POST, async znode =>
-            {
-                try
-                {
-                    if (!znode.Equals("/"))
-                    {
-                        try
-                        {
-                            await zkClient.delete(znode, -1, true);
-                        }
-                        catch (KeeperException.NotEmptyException e)
-                        {
-                            clean(zkClient, znode);
-                        }
-                    }
-                }
-                catch (KeeperException.NoNodeException r)
-                {
-                }
-            });
-        }
         /// <summary>
         /// Delete a path and all of its sub nodes
+        /// yeah, it's recursive :(
         /// </summary>
         /// <param name="zkClient"></param>
         /// <param name="path"></param>
         /// <param name="filter">For node to be deleted</param>
         /// <returns></returns>
-        public static async Task clean(SolrZkClient zkClient, string path, Predicate<string> filter)
+        public static async Task clean(SolrZkClient zkClient, string path, Predicate<string> filter = null)
         {
-            if (filter == null)
-            {
-                clean(zkClient, path);
-                return;
-            }
+            var paths = new List<string>();
 
-            var paths = new OrderedSet<string>();
-
-            traverseZkTree(zkClient, path, VISIT_ORDER.VISIT_POST, znode =>
+            await traverseZkTree(zkClient, path, VISIT_ORDER.VISIT_POST, znode =>
             {
-                if (!znode.Equals("/") && filter.Invoke(znode)) paths.Add(znode);
+                if (!znode.Equals("/") && (filter?.Invoke(znode) ?? true))
+                {
+                    paths.Add(znode);
+                }
             });
 
-            foreach (var subpath in paths)
+            foreach (var subpath in paths.OrderByDescending(s => s.Length))
             {
                 if (!subpath.Equals("/"))
                 {
@@ -315,6 +289,10 @@ namespace ReindexAutomation.Client.Cloud
                         if (ex is KeeperException.NotEmptyException || ex is KeeperException.NoNodeException)
                         {
                             //expected
+                        }
+                        else
+                        {
+                            throw ex;
                         }
                     }
                 }
@@ -365,7 +343,7 @@ namespace ReindexAutomation.Client.Cloud
             });
         }
 
-        public static void WalkFileTree(string rootPath, Action<string> operationOnFile)
+        private static void WalkFileTree(string rootPath, Action<string> operationOnFile)
         {
             foreach (var file in Directory.GetFiles(rootPath))
             {
@@ -456,7 +434,7 @@ namespace ReindexAutomation.Client.Cloud
         /// <param name="path">The path to start from</param>
         /// <param name="visitOrder">Whether to call the visitor at the at the ending or beginning of the run.</param>
         /// <param name="visitor">The operation to perform on each path</param>
-        public static async void traverseZkTree(SolrZkClient zkClient, string path, VISIT_ORDER visitOrder, Action<string> visitor)
+        public static async Task traverseZkTree(SolrZkClient zkClient, string path, VISIT_ORDER visitOrder, Action<string> visitor)
         {
             if (visitOrder == VISIT_ORDER.VISIT_PRE)
             {
@@ -467,7 +445,7 @@ namespace ReindexAutomation.Client.Cloud
             {
                 children = await zkClient.getChildren(path, null, true);
             }
-            catch (KeeperException.NoNodeException ex)
+            catch (KeeperException.NoNodeException)
             {
                 return;
             }
@@ -478,11 +456,11 @@ namespace ReindexAutomation.Client.Cloud
                 if (path.StartsWith("/zookeeper")) { continue; }
                 if (path.Equals("/"))
                 {
-                    traverseZkTree(zkClient, path + child, visitOrder, visitor);
+                    await traverseZkTree(zkClient, path + child, visitOrder, visitor);
                 }
                 else
                 {
-                    traverseZkTree(zkClient, path + "/" + child, visitOrder, visitor);
+                    await traverseZkTree(zkClient, path + "/" + child, visitOrder, visitor);
                 }
             }
             if (visitOrder == VISIT_ORDER.VISIT_POST)

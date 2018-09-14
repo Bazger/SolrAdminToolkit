@@ -479,15 +479,15 @@ namespace ReindexAutomation.Client.Cloud
         /// <param name="acls">A list of ACLs to be applied</param>
         /// <param name="retryOnConnLoss">True if the command should be retried on connection loss</param>
         /// <returns></returns>
-        public Task<Stat> setACL(string path, List<ACL> acls, bool retryOnConnLoss)
+        public async Task<Stat> setACL(string path, List<ACL> acls, bool retryOnConnLoss)
         {
             if (retryOnConnLoss)
             {
-                return _zkCmdExecutor.RetryOperation(() => keeper.setACLAsync(path, acls));
+                return await _zkCmdExecutor.RetryOperation(async () => await keeper.setACLAsync(path, acls));
             }
             else
             {
-                return keeper.setACLAsync(path, acls);
+                return await keeper.setACLAsync(path, acls);
             }
         }
 
@@ -495,27 +495,26 @@ namespace ReindexAutomation.Client.Cloud
         /// Update all ACLs for a zk tree based on our configured ZkACLProvider
         /// </summary>
         /// <param name="root">The root node to recursively update</param>
-        public void updateACLs(string root)
+        public async Task updateACLs(string root)
         {
-            ZkMaintenanceUtils.traverseZkTree(this, root, VISIT_ORDER.VISIT_POST, async path =>
+            await ZkMaintenanceUtils.traverseZkTree(this, root, VISIT_ORDER.VISIT_POST, async path =>
             {
                 try
                 {
                     await setACL(path, (await keeper.getACLAsync(path)).Acls, true);
                 }
-                catch (KeeperException.NoNodeException e)
+                catch (KeeperException.NoNodeException)
                 {
                     // If a node was deleted, don't bother trying to set ACLs on it.
-                    return;
                 }
             });
         }
 
 
         // Some pass-throughs to allow less code disruption to other classes that use SolrZkClient.
-        public void clean(string path)
+        public async Task clean(string path)
         {
-            ZkMaintenanceUtils.clean(this, path);
+            await ZkMaintenanceUtils.clean(this, path);
         }
 
         public async Task clean(string path, Predicate<string> nodeFilter)

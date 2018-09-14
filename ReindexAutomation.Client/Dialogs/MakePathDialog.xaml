@@ -15,23 +15,15 @@
             <RowDefinition />
             <RowDefinition />
             <RowDefinition />
-            <RowDefinition />
         </Grid.RowDefinitions>
         <TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}" HorizontalAlignment="Left">Make Path</TextBlock>
-        <Separator
-            Grid.Row="1"
-            Style="{StaticResource MaterialDesignDarkSeparator}" Height="3" />
-        <!--<TextBox Grid.Row="2" Margin="3 20 3 0" VerticalAlignment="Bottom"
-                  wpf:HintAssist.Hint="Directory"               
-                  Style="{StaticResource MaterialDesignFloatingHintTextBox}"
-                  IsReadOnly="True" Text="{Binding Path=Directory}">
-        </TextBox>-->
-        <ComboBox Grid.Row="3" Margin="3 20 3 0" VerticalAlignment="Bottom"                
+        <Separator Grid.Row="1" Style="{StaticResource MaterialDesignDarkSeparator}" Height="3" />
+        <ComboBox Grid.Row="2" Margin="3 20 3 0" VerticalAlignment="Bottom"                
                   wpf:HintAssist.Hint="New path name"                          
                   Style="{StaticResource MaterialDesignFloatingHintComboBox}"
                   IsEditable="True" Text="{Binding Path=Name}">
         </ComboBox>
-        <StackPanel Orientation="Horizontal" Grid.Row="4"
+        <StackPanel Orientation="Horizontal" Grid.Row="3"
                     Margin="0 16 0 0">
             <Button IsDefault="True" Style="{DynamicResource MaterialDesignFlatButton}"
                     Command="{x:Static wpf:DialogHost.CloseDialogCommand}">

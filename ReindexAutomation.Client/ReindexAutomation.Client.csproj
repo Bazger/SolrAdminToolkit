@@ -65,9 +65,6 @@
     <Reference Include="Microsoft.Expression.Interactions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\..\..\..\Downloads\MaterialDesignInXamlToolkit-master\MaterialDesignInXamlToolkit-master\packages\System.Windows.Interactivity.WPF.2.0.20525\lib\net40\Microsoft.Expression.Interactions.dll</HintPath>
     </Reference>
-    <Reference Include="PowerCollections, Version=1.0.2141.24679, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\..\Downloads\MaterialDesignInXamlToolkit-master\MaterialDesignInXamlToolkit-master\packages\XAct.Wintellect.PowerCollections.0.0.1\lib\net20\PowerCollections.dll</HintPath>
-    </Reference>
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -97,6 +94,9 @@
     </ApplicationDefinition>
     <Compile Include="Converters\BooleanOrConverter.cs" />
     <Compile Include="Converters\BooleanAndConverter.cs" />
+    <Compile Include="Dialogs\DeltePathDialog.xaml.cs">
+      <DependentUpon>DeltePathDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Domain\RelayCommand.cs" />
     <Compile Include="Domain\DataImportManagmentViewModel.cs" />
     <Compile Include="Domain\DocumentationLink.cs" />
@@ -107,33 +107,30 @@
     <Compile Include="Domain\CommandButton.cs" />
     <Compile Include="Domain\NotEmptyValidationRule.cs" />
     <Compile Include="Domain\ConfigDialogViewModel.cs" />
-    <Compile Include="Domain\SampleProgressDialog.xaml.cs">
-      <DependentUpon>SampleProgressDialog.xaml</DependentUpon>
+    <Compile Include="Dialogs\ProgressDialog.xaml.cs">
+      <DependentUpon>ProgressDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Domain\SolrCloudManagmentViewModel.cs" />
     <Compile Include="Domain\SolrIndexManagmentViewModel.cs" />
     <Compile Include="Domain\SolrServiceMangmentViewModel.cs" />
-    <Compile Include="Domain\DownConfigDialog.xaml.cs">
+    <Compile Include="Dialogs\DownConfigDialog.xaml.cs">
       <DependentUpon>DownConfigDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Domain\MakePathDialog.xaml.cs">
+    <Compile Include="Dialogs\MakePathDialog.xaml.cs">
       <DependentUpon>MakePathDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Domain\UpConfigDialog.xaml.cs">
+    <Compile Include="Dialogs\UpConfigDialog.xaml.cs">
       <DependentUpon>UpConfigDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Domain\ZookeeperManagmentViewModel.cs" />
     <Compile Include="Domain\MainWindowViewModel.cs" />
     <Compile Include="Domain\NotifyPropertyChangedExtension.cs" />
     <Compile Include="Domain\Section.cs" />
-    <Compile Include="Domain\Sample4Dialog.xaml.cs">
-      <DependentUpon>Sample4Dialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Domain\SampleDialog.xaml.cs">
+    <Compile Include="Dialogs\SampleDialog.xaml.cs">
       <DependentUpon>SampleDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Domain\SampleDialogViewModel.cs" />
-    <Compile Include="Domain\SampleMessageDialog.xaml.cs">
+    <Compile Include="Domain\CommonDialogViewModel.cs" />
+    <Compile Include="Dialogs\SampleMessageDialog.xaml.cs">
       <DependentUpon>SampleMessageDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="DataImportManagment.xaml.cs">
@@ -160,23 +157,23 @@
     <Compile Include="Home.xaml.cs">
       <DependentUpon>Home.xaml</DependentUpon>
     </Compile>
+    <Page Include="Dialogs\DeltePathDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Domain\DocumentationLinks.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Domain\SampleMessageDialog.xaml">
+    <Page Include="Dialogs\SampleMessageDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Domain\Sample4Dialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Domain\SampleDialog.xaml">
+    <Page Include="Dialogs\SampleDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Domain\SampleProgressDialog.xaml">
+    <Page Include="Dialogs\ProgressDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -184,15 +181,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Domain\DownConfigDialog.xaml">
+    <Page Include="Dialogs\DownConfigDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Domain\MakePathDialog.xaml">
+    <Page Include="Dialogs\MakePathDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Domain\UpConfigDialog.xaml">
+    <Page Include="Dialogs\UpConfigDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

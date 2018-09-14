@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using ReindexAutomation.Client.Cloud;
+using ReindexAutomation.Client.Dialogs;
 
 namespace ReindexAutomation.Client.Domain
 {
@@ -323,7 +324,7 @@ namespace ReindexAutomation.Client.Domain
             eventArgs.Cancel();
 
             //...now, lets update the "session" with some new content!
-            eventArgs.Session.UpdateContent(new SampleProgressDialog());
+            eventArgs.Session.UpdateContent(new Dialogs.ProgressDialog());
             //note, you can also grab the session when the dialog opens via the DialogOpenedEventHandler            
 
             //lets run a fake operation for 3 seconds then close this baby.
@@ -397,7 +398,7 @@ namespace ReindexAutomation.Client.Domain
             eventArgs.Cancel();
 
             //...now, lets update the "session" with some new content!
-            eventArgs.Session.UpdateContent(new SampleProgressDialog());
+            eventArgs.Session.UpdateContent(new Dialogs.ProgressDialog());
             //note, you can also grab the session when the dialog opens via the DialogOpenedEventHandler            
 
             //lets run a fake operation for 3 seconds then close this baby.
@@ -431,7 +432,7 @@ namespace ReindexAutomation.Client.Domain
         private async void ExecuteMakePathDialog(object o)
         {
             //let's set up a little MVVM, cos that's what the cool kids are doing:
-            var context = new SampleDialogViewModel
+            var context = new CommonDialogViewModel
             {
                 Name = _selectedZkPath ?? "/"
             };
@@ -468,16 +469,16 @@ namespace ReindexAutomation.Client.Domain
 
         #region Clear
 
-        public ICommand ClearDialogCommand => new RelayCommand(ExecuteMakePathDialog);
+        public ICommand DeltePathDialogCommand => new RelayCommand(ExecuteDeletePathDialog);
 
-        private async void ExecuteClearDialog(object o)
+        private async void ExecuteDeletePathDialog(object o)
         {
             //let's set up a little MVVM, cos that's what the cool kids are doing:
-            var context = new SampleDialogViewModel
+            var context = new CommonDialogViewModel
             {
                 Name = _selectedZkPath ?? "/"
             };
-            var view = new MakePathDialog
+            var view = new DeletePathDialog()
             {
                 DataContext = context
             };
@@ -492,7 +493,7 @@ namespace ReindexAutomation.Client.Domain
                 {
                     try
                     {
-                        await zkClient.makePath(context.Name, true);
+                        await zkClient.clean(context.Name);
                     }
                     catch (Exception ex)
                     {

@@ -3,11 +3,11 @@
 namespace ReindexAutomation.Client.Dialogs
 {
     /// <summary>
-    /// Interaction logic for SampleProgressDialog.xaml
+    /// Interaction logic for UpConfigDialog.xaml
     /// </summary>
-    public partial class SampleProgressDialog : UserControl
+    public partial class DeletePathDialog : UserControl
     {
-        public SampleProgressDialog()
+        public DeletePathDialog()
         {
             InitializeComponent();
         }
