@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using SolrAdministrationToolKit.Client.Domain;
 
 namespace SolrAdministrationToolKit.Client.Domain
 {
