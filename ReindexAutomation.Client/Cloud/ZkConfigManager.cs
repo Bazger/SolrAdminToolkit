@@ -137,7 +137,7 @@ namespace ReindexAutomation.Client.Cloud
             var path = COLLECTIONS_ZKNODE + "/" + collection;
             //log.debug("Load collection config from:" + path);
             byte[] data;
-            ZkNodeProps props;
+            KeyedList<string, object> props;
             try
             {
                 data = await zkClient.getData(path, null, null, true);
@@ -146,7 +146,7 @@ namespace ReindexAutomation.Client.Cloud
             {
                 // if there is no node, we will try and create it
                 // first try to make in case we are pre configuring
-                props = new ZkNodeProps(CONFIGNAME_PROP, confSetName);
+                props = new KeyedList<string, object> { { CONFIGNAME_PROP, confSetName } };
                 try
                 {
                     await zkClient.makePath(path, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(props)),
@@ -168,22 +168,19 @@ namespace ReindexAutomation.Client.Cloud
             // we found existing data, let's update it
             if (data != null)
             {
-                props = ZkNodeProps.load(data);
-                var newProps = new OrderedDictionary<string, object>();
-                newProps.AddMany(props.getProperties());
-                if (newProps.ContainsKey(CONFIGNAME_PROP))
+                props = JsonConvert.DeserializeObject<KeyedList<string, object>>(Encoding.UTF8.GetString(data));
+                if (props.ContainsKey(CONFIGNAME_PROP))
                 {
-                    newProps.Replace(CONFIGNAME_PROP, confSetName);
+                    props[CONFIGNAME_PROP] = confSetName;
                 }
                 else
                 {
-                    newProps.Add(CONFIGNAME_PROP, confSetName);
+                    props.Add(CONFIGNAME_PROP, confSetName);
                 }
-                props = new ZkNodeProps(newProps);
             }
             else
             {
-                props = new ZkNodeProps(CONFIGNAME_PROP, confSetName);
+                props = new KeyedList<string, object> { { CONFIGNAME_PROP, confSetName } };
             }
 
             // TODO: we should consider using version

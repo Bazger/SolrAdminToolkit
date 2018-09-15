@@ -268,7 +268,7 @@ namespace ReindexAutomation.Client.Cloud
         /// <returns></returns>
         public static async Task clean(SolrZkClient zkClient, string path, Predicate<string> filter = null)
         {
-            var paths = new List<string>();
+            var paths = new SortedSet<string>(Comparer<string>.Create((s, s1) => s1.Length - s.Length));
 
             await traverseZkTree(zkClient, path, VISIT_ORDER.VISIT_POST, znode =>
             {
@@ -278,7 +278,7 @@ namespace ReindexAutomation.Client.Cloud
                 }
             });
 
-            foreach (var subpath in paths.OrderByDescending(s => s.Length))
+            foreach (var subpath in paths)
             {
                 if (!subpath.Equals("/"))
                 {
