@@ -133,7 +133,7 @@ namespace ReindexAutomation.Client.Cloud
             //local -> ZK copy
             if (dstIsZk)
             {
-                uploadToZK(zkClient, src, dst, null);
+                await uploadToZK(zkClient, src, dst, null);
                 return;
             }
 
@@ -267,7 +267,7 @@ namespace ReindexAutomation.Client.Cloud
         /// <returns></returns>
         public static async Task clean(SolrZkClient zkClient, string path, Predicate<string> filter = null)
         {
-            var paths = new SortedSet<string>(Comparer<string>.Create((s, s1) => s1.Length - s.Length));
+            var paths = new List<string>();
 
             await traverseZkTree(zkClient, path, VISIT_ORDER.VISIT_POST, znode =>
             {
@@ -277,7 +277,7 @@ namespace ReindexAutomation.Client.Cloud
                 }
             });
 
-            foreach (var subpath in paths)
+            foreach (var subpath in paths.OrderByDescending(s => s.Length))
             {
                 if (!subpath.Equals("/"))
                 {
@@ -300,7 +300,7 @@ namespace ReindexAutomation.Client.Cloud
             }
         }
 
-        public static void uploadToZK(SolrZkClient zkClient, string fromPath, string zkPath, Regex filenameExclusions)
+        public static async Task uploadToZK(SolrZkClient zkClient, string fromPath, string zkPath, Regex filenameExclusions)
         {
 
             var path = fromPath;
@@ -312,36 +312,46 @@ namespace ReindexAutomation.Client.Cloud
             var rootPath = path;
             if (!Directory.Exists(rootPath))
             {
-                throw new IOException("Path " + rootPath + " does not exist");
+                if (!File.Exists(rootPath))
+                {
+                    throw new IOException("Path " + rootPath + " does not exist");
+                }
+                var filePath = path;
+                await uploadFileToZk(zkClient, zkPath, filePath, filenameExclusions);
             }
             WalkFileTree(rootPath, async (file) =>
             {
-                var fielName = Path.GetFileName(file);
-                if (filenameExclusions != null && filenameExclusions.Match(fielName ?? throw new InvalidOperationException("File name is empty")).Success)
-                {
-                    //TODO: Log here
-                    //log.info("uploadToZK skipping '{}' due to filenameExclusions '{}'", filename, filenameExclusions);
-                    return;
-                }
                 var zkNode = createZkNodeName(zkPath, rootPath, file);
-                try
-                {
-                    // if the path exists (and presumably we're uploading data to it) just set its data
-                    if (Path.GetFileName(file).Equals(ZKNODE_DATA_FILE) && (await zkClient.exists(zkNode, true)))
-                    {
-                        await zkClient.setData(zkNode, file, true);
-                    }
-                    else
-                    {
-                        //Can't work async because it will try to create same path
-                        zkClient.makePath(zkNode, file, false, true).Wait();
-                    }
-                }
-                catch (KeeperException ex)
-                {
-                    throw new Exception("Error uploading file " + file + " to zookeeper path " + zkNode, SolrZkClient.checkInterrupted(ex));
-                }
+                await uploadFileToZk(zkClient, zkNode, file, filenameExclusions);
             });
+        }
+
+        private static async Task uploadFileToZk(SolrZkClient zkClient, string zkNode, string file, Regex filenameExclusions)
+        {
+            var fielName = Path.GetFileName(file);
+            if (filenameExclusions != null && filenameExclusions.Match(fielName ?? throw new InvalidOperationException("File name is empty")).Success)
+            {
+                //TODO: Log here
+                //log.info("uploadToZK skipping '{}' due to filenameExclusions '{}'", filename, filenameExclusions);
+                return;
+            }
+            try
+            {
+                // if the path exists (and presumably we're uploading data to it) just set its data
+                if (Path.GetFileName(file).Equals(ZKNODE_DATA_FILE) && (await zkClient.exists(zkNode, true)))
+                {
+                    await zkClient.setData(zkNode, file, true);
+                }
+                else
+                {
+                    //Can't work async because it will try to create same path
+                    zkClient.makePath(zkNode, file, false, true).Wait();
+                }
+            }
+            catch (KeeperException ex)
+            {
+                throw new Exception("Error uploading file " + file + " to zookeeper path " + zkNode, SolrZkClient.checkInterrupted(ex));
+            }
         }
 
         private static void WalkFileTree(string rootPath, Action<string> operationOnFile)

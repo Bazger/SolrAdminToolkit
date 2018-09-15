@@ -8,18 +8,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
-using org.apache.zookeeper.data;
 using ReindexAutomation.Client.Cloud;
 using ReindexAutomation.Client.Dialogs;
 
 namespace ReindexAutomation.Client.Domain
 {
     //TODO: Add caution for bad dirs
-    //TODO: Zk Node and Host make stable 
-    //TODO: Put and get buttons
-    //TODO: Fix file get name  (Get)
 
     public class ZookeeperManagmentViewModel : INotifyPropertyChanged
     {
@@ -31,7 +26,7 @@ namespace ReindexAutomation.Client.Domain
         private bool _isFileSelected;
         private bool _isDirectoryTreeItemSelected;
 
-        private TreeViewDirectory _selectedDirectory;
+        private string _selectedLocalPath;
         private string _selectedZkPath;
 
         private bool _isZkConfigSelected;
@@ -58,7 +53,9 @@ namespace ReindexAutomation.Client.Domain
         }
 
         public string ZkHost { get; set; }
+        public string ZkHostConnected { get; private set; }
         public string ZkPort { get; set; }
+        public string ZkPortConnected { get; private set; }
 
         public bool IsDirectorySelected
         {
@@ -175,12 +172,16 @@ namespace ReindexAutomation.Client.Domain
                     var tree = GetZkTree(zkClient).Result;
                     IsZkConnected = true;
                     tree.IsExpanded = true;
+                    ZkHostConnected = ZkHost;
+                    ZkPortConnected = ZkPort;
                     return tree;
                 }
                 catch (Exception)
                 {
-                    //_snackbarMessageQueue.Enqueue("Could not connect to ZK host!", "OK", () => Trace.WriteLine("Actioned"));
+                    _snackbarMessageQueue.Enqueue("Could not connect to ZK host!", "OK", () => Trace.WriteLine("Actioned"));
                     IsZkConnected = false;
+                    ZkHostConnected = null;
+                    ZkPortConnected = null;
                 }
             }
             return null;
@@ -227,18 +228,19 @@ namespace ReindexAutomation.Client.Domain
         {
             IsDirectoryTreeItemSelected = true;
             IsFileSelected = false;
-            _selectedDirectory = null;
+            _selectedLocalPath = null;
             IsDirectorySelected = false;
             if (args is TreeViewDirectory directory)
             {
-                _selectedDirectory = directory;
+                _selectedLocalPath = directory.Path;
                 IsDirectorySelected = true;
             }
             else
             {
-                if (args is TreeViewFile)
+                if (args is TreeViewFile file)
                 {
                     IsFileSelected = true;
+                    _selectedLocalPath = file.Path;
                     return;
                 }
                 IsDirectoryTreeItemSelected = false;
@@ -253,7 +255,7 @@ namespace ReindexAutomation.Client.Domain
             if (args is TreeViewDirectory zkDirectory)
             {
                 _selectedZkPath = zkDirectory.Path;
-                if (zkDirectory.Path.ToLower().Contains("configs") && zkDirectory.Path.Split('/').Length == 3)
+                if (zkDirectory.Path.ToLower().Contains(ZkConfigManager.ConfigsZKnode) && zkDirectory.Path.Split('/').Length == 3)
                 {
                     IsZkConfigSelected = true;
                 }
@@ -321,7 +323,7 @@ namespace ReindexAutomation.Client.Domain
             }
             Task.Run(async () =>
             {
-                using (var zkClient = new SolrZkClient($"{ZkHost}:{ZkPort}"))
+                using (var zkClient = new SolrZkClient($"{ZkHostConnected}:{ZkPortConnected}"))
                 {
                     try
                     {
@@ -340,7 +342,6 @@ namespace ReindexAutomation.Client.Domain
                             }
                             var filePath = Path.Combine(dirPath, Path.GetFileName(path));
                             File.WriteAllBytes(filePath, data);
-                            File.WriteAllBytes(filePath, data);
                             Process.Start(filePath);
                         }
                     }
@@ -358,11 +359,11 @@ namespace ReindexAutomation.Client.Domain
 
         private async void ExecuteDownConfigDialog(object o)
         {
-            var configs = ZkNode[0].Directories.ToList().FirstOrDefault(dir => dir.Name.ToLower().Contains("configs"))?
+            var configs = ZkNode[0].Directories.ToList().FirstOrDefault(dir => dir.Name.ToLower().Contains(ZkConfigManager.ConfigsZKnode))?
                 .Directories.Select(config => config.Name).ToList();
             var selectedZkConfig = IsZkConfigSelected ? _selectedZkPath : null;
             var configName = Path.GetFileName(selectedZkConfig ?? configs?.FirstOrDefault());
-            var path = Path.Combine(/*_selectedDirectory?.Path ?? */RootDirectories[0].Path, configName ?? string.Empty);
+            var path = Path.Combine(RootDirectories[0].Path, configName ?? string.Empty);
 
             //let's set up a little MVVM, cos that's what the cool kids are doing:        
             var context = new ConfigDialogViewModel
@@ -405,7 +406,7 @@ namespace ReindexAutomation.Client.Domain
             //lets run a fake operation for 3 seconds then close this baby.
             await Task.Run(async () =>
             {
-                using (var zkClient = new SolrZkClient($"{ZkHost}:{ZkPort}"))
+                using (var zkClient = new SolrZkClient($"{ZkHostConnected}:{ZkPortConnected}"))
                 {
                     try
                     {
@@ -430,12 +431,12 @@ namespace ReindexAutomation.Client.Domain
 
         private async void ExecuteUpConfigDialog(object o)
         {
-            var configName = Path.GetFileName(_selectedDirectory.Name);
+            var configName = Path.GetFileName(_selectedLocalPath);
             if (!configName.ToLower().Contains("config"))
             {
                 configName += "Config";
             }
-            var path = _selectedDirectory.Path;//FileHelper.MinimizePath(_selectedDirectory.Path, 60);
+            var path = _selectedLocalPath;
 
 
             //let's set up a little MVVM, cos that's what the cool kids are doing:        
@@ -479,7 +480,7 @@ namespace ReindexAutomation.Client.Domain
             //lets run a fake operation for 3 seconds then close this baby.
             await Task.Run(() =>
             {
-                using (var zkClient = new SolrZkClient($"{ZkHost}:{ZkPort}"))
+                using (var zkClient = new SolrZkClient($"{ZkHostConnected}:{ZkPortConnected}"))
                 {
                     try
                     {
@@ -493,7 +494,7 @@ namespace ReindexAutomation.Client.Domain
             }).ContinueWith((t, _) => eventArgs.Session.Close(false), null,
                 TaskScheduler.FromCurrentSynchronizationContext());
             //TODO: Do if ex was not throwen
-            var tree = await Task.Run(() => ConnectToZkTree(ZkHost, ZkPort));
+            var tree = await Task.Run(() => ConnectToZkTree(ZkHostConnected, ZkPortConnected));
             ZkNode.Clear();
             ZkNode.Add(tree);
         }
@@ -522,7 +523,7 @@ namespace ReindexAutomation.Client.Domain
             //check the result...
             if (result != null && (bool)result)
             {
-                using (var zkClient = new SolrZkClient($"{ZkHost}:{ZkPort}"))
+                using (var zkClient = new SolrZkClient($"{ZkHostConnected}:{ZkPortConnected}"))
                 {
                     try
                     {
@@ -534,10 +535,81 @@ namespace ReindexAutomation.Client.Domain
                     }
                 }
                 //TODO: Do if ex was not throwens
-                var tree = await Task.Run(() => ConnectToZkTree(ZkHost, ZkPort));
+                var tree = await Task.Run(() => ConnectToZkTree(ZkHostConnected, ZkPortConnected));
                 ZkNode.Clear();
                 ZkNode.Add(tree);
             }
+        }
+
+        #endregion
+
+        #region Put
+
+        public ICommand PutDialogCommand => new RelayCommand(ExecutePutDialog);
+
+        private async void ExecutePutDialog(object o)
+        {
+            var path = _selectedLocalPath;
+            var selectedZkPath = IsZkPathSelected ? _selectedZkPath : null;
+
+            //let's set up a little MVVM, cos that's what the cool kids are doing:        
+            var context = new TransferDialogViewModel
+            {
+                LocalDirectory = path,
+                ZkPath = selectedZkPath != null ?
+                    Path.Combine(selectedZkPath, Path.GetFileName(path) ?? string.Empty).Replace("\\", "/") :
+                    "/" + Path.GetFileName(path)
+            };
+            var view = new PutDialog
+            {
+                DataContext = context
+            };
+
+            //show the dialog
+            await DialogHost.Show(view, "RootDialog", PutClosingEventHandler);
+        }
+
+        private async void PutClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
+        {
+            if ((bool)eventArgs.Parameter == false) { return; }
+
+            var dialogModel = (eventArgs.Session.Content as UserControl)?.DataContext as TransferDialogViewModel;
+            var dir = dialogModel?.LocalDirectory;
+            var zkPath = dialogModel?.ZkPath;
+
+            if (string.IsNullOrEmpty(dir) || string.IsNullOrEmpty(zkPath))
+            {
+                //TODO: Throw the snackbar
+                return;
+            }
+
+            //OK, lets cancel the close...
+            eventArgs.Cancel();
+
+            //...now, lets update the "session" with some new content!
+            eventArgs.Session.UpdateContent(new ProgressDialog());
+            //note, you can also grab the session when the dialog opens via the DialogOpenedEventHandler            
+
+            //lets run a fake operation for 3 seconds then close this baby.
+            await Task.Run(async () =>
+            {
+                using (var zkClient = new SolrZkClient($"{ZkHostConnected}:{ZkPortConnected}"))
+                {
+                    try
+                    {
+                        await zkClient.uploadToZK(dir, zkPath, ZkConfigManager.UploadFilenameExcludeRegex);
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO: Show error;
+                    }
+                }
+            }).ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+                TaskScheduler.FromCurrentSynchronizationContext());
+            //TODO: Do if ex was not throwen
+            var tree = await Task.Run(() => ConnectToZkTree(ZkHostConnected, ZkPortConnected));
+            ZkNode.Clear();
+            ZkNode.Add(tree);
         }
 
         #endregion
@@ -548,7 +620,7 @@ namespace ReindexAutomation.Client.Domain
 
         private async void ExecuteGetDialog(object o)
         {
-            var dir = Path.Combine(_selectedDirectory?.Path ?? RootDirectories[0].Path);
+            var dir = Path.Combine((IsDirectorySelected ? _selectedLocalPath : null) ?? RootDirectories[0].Path);
             var selectedZkPath = IsZkPathSelected ? _selectedZkPath : null;
 
             //let's set up a little MVVM, cos that's what the cool kids are doing:        
@@ -590,7 +662,7 @@ namespace ReindexAutomation.Client.Domain
             //lets run a fake operation for 3 seconds then close this baby.
             await Task.Run(async () =>
             {
-                using (var zkClient = new SolrZkClient($"{ZkHost}:{ZkPort}"))
+                using (var zkClient = new SolrZkClient($"{ZkHostConnected}:{ZkPortConnected}"))
                 {
                     try
                     {
@@ -615,10 +687,9 @@ namespace ReindexAutomation.Client.Domain
 
         private async void ExecuteLinkConfigDialog(object o)
         {
-            //TODO: Get configs and collections const
-            var collections = ZkNode[0].Directories.ToList().FirstOrDefault(dir => dir.Name.ToLower().Contains("collections"))?
+            var collections = ZkNode[0].Directories.ToList().FirstOrDefault(dir => dir.Name.ToLower().Contains(ZkConfigManager.CollectionsZknode))?
                 .Directories.Select(config => config.Name).ToList();
-            var configs = ZkNode[0].Directories.ToList().FirstOrDefault(dir => dir.Name.ToLower().Contains("configs"))?
+            var configs = ZkNode[0].Directories.ToList().FirstOrDefault(dir => dir.Name.ToLower().Contains(ZkConfigManager.ConfigsZKnode))?
                 .Directories.Select(config => config.Name).ToList();
 
             //let's set up a little MVVM, cos that's what the cool kids are doing:
@@ -638,7 +709,7 @@ namespace ReindexAutomation.Client.Domain
             //check the result...
             if (result != null && (bool)result)
             {
-                using (var zkClient = new SolrZkClient($"{ZkHost}:{ZkPort}"))
+                using (var zkClient = new SolrZkClient($"{ZkHostConnected}:{ZkPortConnected}"))
                 {
                     try
                     {
@@ -677,7 +748,7 @@ namespace ReindexAutomation.Client.Domain
             //check the result...
             if (result != null && (bool)result)
             {
-                using (var zkClient = new SolrZkClient($"{ZkHost}:{ZkPort}"))
+                using (var zkClient = new SolrZkClient($"{ZkHostConnected}:{ZkPortConnected}"))
                 {
                     try
                     {
@@ -689,7 +760,7 @@ namespace ReindexAutomation.Client.Domain
                     }
                 }
                 //TODO: Do if ex was not throwen
-                var tree = await Task.Run(() => ConnectToZkTree(ZkHost, ZkPort));
+                var tree = await Task.Run(() => ConnectToZkTree(ZkHostConnected, ZkPortConnected));
                 ZkNode.Clear();
                 ZkNode.Add(tree);
             }

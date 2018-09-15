@@ -547,9 +547,9 @@ namespace ReindexAutomation.Client.Cloud
             await ZkMaintenanceUtils.moveZnode(this, src, dst);
         }
 
-        public void uploadToZK(string rootPath, string zkPath, Regex filenameExclusions)
+        public async Task uploadToZK(string rootPath, string zkPath, Regex filenameExclusions)
         {
-            ZkMaintenanceUtils.uploadToZK(this, rootPath, zkPath, filenameExclusions);
+            await ZkMaintenanceUtils.uploadToZK(this, rootPath, zkPath, filenameExclusions);
         }
 
         public async Task downloadFromZK(string zkPath, string dir)

@@ -101,6 +101,9 @@
     <Compile Include="Cloud\KeyedList.cs" />
     <Compile Include="Converters\BooleanOrConverter.cs" />
     <Compile Include="Converters\BooleanAndConverter.cs" />
+    <Compile Include="Dialogs\PutDialog.xaml.cs">
+      <DependentUpon>PutDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\GetDialog.xaml.cs">
       <DependentUpon>GetDialog.xaml</DependentUpon>
     </Compile>
@@ -171,6 +174,10 @@
     <Compile Include="Home.xaml.cs">
       <DependentUpon>Home.xaml</DependentUpon>
     </Compile>
+    <Page Include="Dialogs\PutDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Dialogs\GetDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

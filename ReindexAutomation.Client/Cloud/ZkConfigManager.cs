@@ -15,11 +15,11 @@ namespace ReindexAutomation.Client.Cloud
 {
     public class ZkConfigManager
     {
-        private const string ConfigsZKnode = "/configs";
-        private const string CollectionsZknode = "/collections";
-        private const string ConfignameProp = "configName";
+        public const string ConfigsZKnode = "/configs";
+        public const string CollectionsZknode = "/collections";
+        public const string ConfignameProp = "configName";
 
-        private static readonly Regex UploadFilenameExcludeRegex = new Regex("^\\..*$");
+        public static readonly Regex UploadFilenameExcludeRegex = new Regex("^\\..*$");
 
         private readonly SolrZkClient zkClient;
 
@@ -38,9 +38,9 @@ namespace ReindexAutomation.Client.Cloud
         /// <param name="dir">Path to the files</param>
         /// <param name="configName">The name to give the config</param>
         /// <exception cref="IOException">If an I/O error occurs or the path does not exist</exception>
-        public void uploadConfigDir(string dir, string configName)
+        public async Task uploadConfigDir(string dir, string configName)
         {
-            zkClient.uploadToZK(dir, ConfigsZKnode + "/" + configName, UploadFilenameExcludeRegex);
+            await zkClient.uploadToZK(dir, ConfigsZKnode + "/" + configName, UploadFilenameExcludeRegex);
         }
 
         /// <summary>
@@ -50,9 +50,9 @@ namespace ReindexAutomation.Client.Cloud
         /// <param name="configName">The name to give the config</param>
         /// <param name="filenameExclusions">Files matching this pattern will not be uploaded</param>
         /// <exception cref="IOException">If an I/O error occurs or the path does not exist</exception>
-        public void uploadConfigDir(string dir, string configName, Regex filenameExclusions)
+        public async Task uploadConfigDir(string dir, string configName, Regex filenameExclusions)
         {
-            zkClient.uploadToZK(dir, ConfigsZKnode + "/" + configName, filenameExclusions);
+            await zkClient.uploadToZK(dir, ConfigsZKnode + "/" + configName, filenameExclusions);
         }
 
         /// <summary>

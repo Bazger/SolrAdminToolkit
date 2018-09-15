@@ -65,7 +65,7 @@
                     </Button>
                     <Button
                         Style="{StaticResource CommandButton}"                            
-                        Command="{Binding RunExtendedDialogCommand}"
+                        Command="{Binding PutDialogCommand}"
                         ToolTip="Put file or directory to zk node(s)"
                         Margin="6 5 6 5">
                         <Button.IsEnabled>
