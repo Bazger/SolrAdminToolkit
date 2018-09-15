@@ -15,7 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace ReindexAutomation.Client
+namespace SolrAdministrationToolKit.Client
 {
     /// <summary>
     /// Interaction logic for Home.xaml

@@ -1,4 +1,4 @@
-﻿namespace ReindexAutomation.Client.Cloud
+﻿namespace SolrAdministrationToolKit.Client.Cloud
 {
     public enum VISIT_ORDER
     {

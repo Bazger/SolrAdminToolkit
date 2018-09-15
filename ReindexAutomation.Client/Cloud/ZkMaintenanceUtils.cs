@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -10,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using org.apache.zookeeper;
 
-namespace ReindexAutomation.Client.Cloud
+namespace SolrAdministrationToolKit.Client.Cloud
 {
     //TODO: Work on Async
     //TODO: Work on InteruptException

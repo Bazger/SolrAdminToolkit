@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Windows.Controls;
 
-namespace ReindexAutomation.Client.Domain
+namespace SolrAdministrationToolKit.Client.Domain
 {
 	public class NotEmptyValidationRule : ValidationRule
 	{

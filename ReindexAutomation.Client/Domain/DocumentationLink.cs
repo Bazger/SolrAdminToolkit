@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace ReindexAutomation.Client.Domain
+namespace SolrAdministrationToolKit.Client.Domain
 {
     public class DocumentationLink
     {

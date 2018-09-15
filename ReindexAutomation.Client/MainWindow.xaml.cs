@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Policy;
-using ReindexAutomation.Client.Domain;
 using MaterialDesignThemes.Wpf;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,9 +11,10 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using MaterialDesignColors;
-using ReindexAutomation.Client.Dialogs;
+using SolrAdministrationToolKit.Client.Dialogs;
+using SolrAdministrationToolKit.Client.Domain;
 
-namespace ReindexAutomation.Client
+namespace SolrAdministrationToolKit.Client
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

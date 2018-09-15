@@ -1,4 +1,4 @@
-﻿namespace ReindexAutomation.Client.Domain
+﻿namespace SolrAdministrationToolKit.Client.Domain
 {
     public enum DocumentationLinkType
     {

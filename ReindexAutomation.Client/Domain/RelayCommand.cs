@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace ReindexAutomation.Client.Domain
+namespace SolrAdministrationToolKit.Client.Domain
 {
     /// <summary>
     /// No WPF project is complete without it's own version of this.

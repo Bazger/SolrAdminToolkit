@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using org.apache.zookeeper;
 using org.apache.zookeeper.data;
 
-namespace ReindexAutomation.Client.Cloud
+namespace SolrAdministrationToolKit.Client.Cloud
 {
     /// <summary>
     /// All Solr ZooKeeper interactions should go through this class rather than

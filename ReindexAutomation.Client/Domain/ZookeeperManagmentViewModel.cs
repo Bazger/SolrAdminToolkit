@@ -9,10 +9,10 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using ReindexAutomation.Client.Cloud;
-using ReindexAutomation.Client.Dialogs;
+using SolrAdministrationToolKit.Client.Cloud;
+using SolrAdministrationToolKit.Client.Dialogs;
 
-namespace ReindexAutomation.Client.Domain
+namespace SolrAdministrationToolKit.Client.Domain
 {
     //TODO: Add caution for bad dirs
     //TODO: Cancel to upload or download

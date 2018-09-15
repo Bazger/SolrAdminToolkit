@@ -9,9 +9,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using org.apache.zookeeper;
-using Wintellect.PowerCollections;
 
-namespace ReindexAutomation.Client.Cloud
+namespace SolrAdministrationToolKit.Client.Cloud
 {
     public class ZkConfigManager
     {

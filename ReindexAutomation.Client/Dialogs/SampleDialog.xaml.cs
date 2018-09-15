@@ -1,6 +1,6 @@
 ﻿using System.Windows.Controls;
 
-namespace ReindexAutomation.Client.Dialogs
+namespace SolrAdministrationToolKit.Client.Dialogs
 {
     /// <summary>
     /// Interaction logic for SampleDialog.xaml

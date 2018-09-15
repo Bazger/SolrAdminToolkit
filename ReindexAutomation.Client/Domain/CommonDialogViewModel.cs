@@ -1,8 +1,8 @@
 using System;
 using System.ComponentModel;
-using ReindexAutomation.Client.Domain;
+using SolrAdministrationToolKit.Client.Domain;
 
-namespace ReindexAutomation.Client.Domain
+namespace SolrAdministrationToolKit.Client.Domain
 {
     public class CommonDialogViewModel : INotifyPropertyChanged
     {

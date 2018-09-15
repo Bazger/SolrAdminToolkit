@@ -2,7 +2,7 @@
 using MaterialDesignThemes.Wpf;
 using System;
 
-namespace ReindexAutomation.Client.Domain
+namespace SolrAdministrationToolKit.Client.Domain
 {
     public class MainWindowViewModel
     {

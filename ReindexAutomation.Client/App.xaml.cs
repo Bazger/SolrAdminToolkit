@@ -1,7 +1,7 @@
 ﻿
 using System.Windows;
 
-namespace ReindexAutomation.Client
+namespace SolrAdministrationToolKit.Client
 {
     /// <summary>
     /// Interaction logic for App.xaml

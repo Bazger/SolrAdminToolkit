@@ -33,7 +33,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace ReindexAutomation.Client.Cloud
+namespace SolrAdministrationToolKit.Client.Cloud
 {
 	[Serializable]
 	public class KeyedList<K, V> : IDictionary<K, V>, IList<KeyValuePair<K, V>>

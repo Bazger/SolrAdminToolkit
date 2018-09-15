@@ -2,7 +2,7 @@
 using System.Threading;
 using org.apache.zookeeper;
 
-namespace ReindexAutomation.Client.Cloud
+namespace SolrAdministrationToolKit.Client.Cloud
 {
     public class ZkCmdExecutor
     {
