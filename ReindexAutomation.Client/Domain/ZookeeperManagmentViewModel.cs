@@ -19,6 +19,7 @@ namespace ReindexAutomation.Client.Domain
     //TODO: Add caution for bad dirs
     //TODO: Zk Node and Host make stable 
     //TODO: Put and get buttons
+    //TODO: Fix file get name  (Get)
 
     public class ZookeeperManagmentViewModel : INotifyPropertyChanged
     {
@@ -537,6 +538,73 @@ namespace ReindexAutomation.Client.Domain
                 ZkNode.Clear();
                 ZkNode.Add(tree);
             }
+        }
+
+        #endregion
+
+        #region Get
+
+        public ICommand GetDialogCommand => new RelayCommand(ExecuteGetDialog);
+
+        private async void ExecuteGetDialog(object o)
+        {
+            var dir = Path.Combine(_selectedDirectory?.Path ?? RootDirectories[0].Path);
+            var selectedZkPath = IsZkPathSelected ? _selectedZkPath : null;
+
+            //let's set up a little MVVM, cos that's what the cool kids are doing:        
+            var context = new TransferDialogViewModel
+            {
+                LocalDirectory = Path.Combine(dir, Path.GetFileName(selectedZkPath ?? string.Empty)),
+                ZkPath = selectedZkPath,
+            };
+            var view = new GetDialog
+            {
+                DataContext = context
+            };
+
+            //show the dialog
+            await DialogHost.Show(view, "RootDialog", GetClosingEventHandler);
+        }
+
+        private async void GetClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
+        {
+            if ((bool)eventArgs.Parameter == false) { return; }
+
+            var dialogModel = (eventArgs.Session.Content as UserControl)?.DataContext as TransferDialogViewModel;
+            var dir = dialogModel?.LocalDirectory;
+            var zkPath = dialogModel?.ZkPath;
+
+            if (string.IsNullOrEmpty(dir) || string.IsNullOrEmpty(zkPath))
+            {
+                //TODO: Throw the snackbar
+                return;
+            }
+
+            //OK, lets cancel the close...
+            eventArgs.Cancel();
+
+            //...now, lets update the "session" with some new content!
+            eventArgs.Session.UpdateContent(new ProgressDialog());
+            //note, you can also grab the session when the dialog opens via the DialogOpenedEventHandler            
+
+            //lets run a fake operation for 3 seconds then close this baby.
+            await Task.Run(async () =>
+            {
+                using (var zkClient = new SolrZkClient($"{ZkHost}:{ZkPort}"))
+                {
+                    try
+                    {
+                        await zkClient.downloadFromZK(zkPath, dir);
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO: Show error;
+                    }
+                }
+            }).ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+                TaskScheduler.FromCurrentSynchronizationContext());
+            //TODO: Do if ex was not throwen
+            InitializeConfigsDirectory(RootDirectories[0].Path);
         }
 
         #endregion

@@ -101,12 +101,16 @@
     <Compile Include="Cloud\KeyedList.cs" />
     <Compile Include="Converters\BooleanOrConverter.cs" />
     <Compile Include="Converters\BooleanAndConverter.cs" />
+    <Compile Include="Dialogs\GetDialog.xaml.cs">
+      <DependentUpon>GetDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\LinkConfigDialog.xaml.cs">
       <DependentUpon>LinkConfigDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialogs\DeltePathDialog.xaml.cs">
-      <DependentUpon>DeltePathDialog.xaml</DependentUpon>
+    <Compile Include="Dialogs\DeletePathDialog.xaml.cs">
+      <DependentUpon>DeletePathDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Domain\TransferDialogViewModel.cs" />
     <Compile Include="Domain\LinkConfigDialogViewModel.cs" />
     <Compile Include="Domain\RelayCommand.cs" />
     <Compile Include="Domain\DataImportManagmentViewModel.cs" />
@@ -167,11 +171,15 @@
     <Compile Include="Home.xaml.cs">
       <DependentUpon>Home.xaml</DependentUpon>
     </Compile>
+    <Page Include="Dialogs\GetDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Dialogs\LinkConfigDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Dialogs\DeltePathDialog.xaml">
+    <Page Include="Dialogs\DeletePathDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

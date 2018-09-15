@@ -81,7 +81,7 @@
                     </Button>
                     <Button
                         Style="{StaticResource CommandButton}"                            
-                        Command="{Binding RunExtendedDialogCommand}"
+                        Command="{Binding GetDialogCommand}"
                         ToolTip="Get file or directory from zk node(s)"
                         IsEnabled="{Binding Path=IsZkPathSelected}"
                         Margin="6 5 6 5">
