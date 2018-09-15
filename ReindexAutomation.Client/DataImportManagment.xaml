@@ -18,7 +18,96 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+    <ScrollViewer  VerticalScrollBarVisibility="Auto">
+        <StackPanel VerticalAlignment="Stretch" MinWidth="980">
+            <StackPanel Orientation="Horizontal" Margin="20 0 10 5" HorizontalAlignment="Stretch">
+                <materialDesign:PackIcon VerticalAlignment="Center" Width="18" Height="18" Kind="ArrowRightDropCircle" />
+                <TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}" Margin="10 0 0 0">Choose collections:</TextBlock>
+            </StackPanel>
+            <materialDesign:Card  Margin="10 3 10 0" materialDesign:ShadowAssist.ShadowDepth="Depth2" MinHeight="80">
+                <StackPanel Orientation="Vertical">
+                    <Grid HorizontalAlignment="Stretch" Margin="0 15 0 0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="3*"/>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="3*"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox
+                            materialDesign:HintAssist.Hint="Old Collection"
+                            HorizontalAlignment="Center"
+                            ToolTip="Locate to configs directory"
+                            IsEditable="True"
+                            Width="285"
+                            Margin="0 0 10 0"
+                            Text="{Binding Path=ConfigsPath}"
+                            Style="{StaticResource MaterialDesignFloatingHintComboBox}">
+                        </ComboBox>
+                        <DockPanel Grid.Column="1"   VerticalAlignment="Center" HorizontalAlignment="Center">
+                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <materialDesign:PackIcon Kind="ArrowRightThick" Width="32" Height="32"/>
+                            </StackPanel>
+                        </DockPanel>
+                        <ComboBox
+                            Grid.Column="2"
+                            materialDesign:HintAssist.Hint="New Collection"
+                            ToolTip="Locate to configs directory"
+                            IsEditable="True"
+                            Width="285"
+                            Margin="0 0 10 0"
+                            Text="{Binding Path=ConfigsPath}"
+                            Style="{StaticResource MaterialDesignFloatingHintComboBox}">
+                        </ComboBox>
+                    </Grid>
+                    <Border
+                        Margin=" 0 20 0 0"
+                        Background="{DynamicResource MaterialDesignDivider}"
+                        Height="1"
+                        HorizontalAlignment="Stretch"
+                        SnapsToDevicePixels="True" />
+                    <Expander
+                        HorizontalAlignment="Stretch"
+                        Header="Data Import settings:">
+                        <Grid Margin="24,0,24,16" VerticalAlignment="Top">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="30" />
+                                <ColumnDefinition Width="300" />
+                                <ColumnDefinition Width="30" />
+                                <ColumnDefinition Width="300" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <materialDesign:PackIcon Grid.Row="0" Grid.Column="0" Kind="Magnify"  Margin="0 0 0 4" Width="20" Height="20" VerticalAlignment="Bottom" Foreground="{Binding ElementName=NameTextBox, Path=BorderBrush}"/>
+                            <TextBox x:Name="QueryTextBox" Grid.Row="0" Grid.Column="1"  Style="{DynamicResource MaterialDesignFloatingHintTextBox}" 
+                                     materialDesign:HintAssist.Hint="Query">
+                            </TextBox>
+                            <materialDesign:PackIcon Grid.Row="0" Grid.Column="2" Kind="MagnifyPlusOutline"  Margin="0 0 0 4" Width="20" Height="20" VerticalAlignment="Bottom" Foreground="{Binding ElementName=NameTextBox, Path=BorderBrush}"/>
+                            <TextBox x:Name="FilterQueryTextBox" Grid.Row="0" Grid.Column="3"  Style="{DynamicResource MaterialDesignFloatingHintTextBox}" 
+                                     materialDesign:HintAssist.Hint="Filter query">
+                            </TextBox>
+                            <materialDesign:PackIcon Grid.Row="1" Grid.Column="0" Kind="Textbox"  Margin="0 0 0 4" Width="20" Height="20" VerticalAlignment="Bottom" Foreground="{Binding ElementName=NameTextBox, Path=BorderBrush}"/>
+                            <TextBox x:Name="FieldsTextBox" Grid.Row="1" Grid.Column="1"  Style="{DynamicResource MaterialDesignFloatingHintTextBox}" 
+                                     materialDesign:HintAssist.Hint="Fields">
+                            </TextBox>
+                        </Grid>
+                    </Expander>
+
+                </StackPanel>
+            </materialDesign:Card>
+            <StackPanel Orientation="Horizontal" Margin="20 30 10 10" HorizontalAlignment="Stretch">
+                <materialDesign:PackIcon VerticalAlignment="Center" Width="18" Height="18" Kind="ArrowRightDropCircle" />
+                <TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}" Margin="10 0 0 0">Running Data Imports:</TextBlock>
+            </StackPanel>
+            <materialDesign:Card  Margin="10 0 10 0" materialDesign:ShadowAssist.ShadowDepth="Depth2" MinHeight="200">
+                <DataGrid
+                    Margin="0 0 0 0"
+                    ItemsSource="{Binding Items3}"
+                    CanUserSortColumns="True"
+                    CanUserAddRows="False" />
+            </materialDesign:Card>
+        </StackPanel>
     </ScrollViewer>
 </UserControl>
 

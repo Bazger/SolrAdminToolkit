@@ -15,7 +15,7 @@ using ReindexAutomation.Client.Dialogs;
 namespace ReindexAutomation.Client.Domain
 {
     //TODO: Add caution for bad dirs
-
+    //TODO: Cancel to upload or download
     public class ZookeeperManagmentViewModel : INotifyPropertyChanged
     {
         private readonly ISnackbarMessageQueue _snackbarMessageQueue;
