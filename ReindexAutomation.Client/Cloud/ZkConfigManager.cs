@@ -16,8 +16,8 @@ namespace ReindexAutomation.Client.Cloud
     public class ZkConfigManager
     {
         private const string ConfigsZKnode = "/configs";
-        private const string COLLECTIONS_ZKNODE = "/collections";
-        private const string CONFIGNAME_PROP = "configName";
+        private const string CollectionsZknode = "/collections";
+        private const string ConfignameProp = "configName";
 
         private static readonly Regex UploadFilenameExcludeRegex = new Regex("^\\..*$");
 
@@ -134,8 +134,7 @@ namespace ReindexAutomation.Client.Cloud
         public async Task linkConfSet(string collection, string confSetName)
         {
             //This const palced in ZkStateReader.class in java version of code
-            var path = COLLECTIONS_ZKNODE + "/" + collection;
-            //log.debug("Load collection config from:" + path);
+            var path = CollectionsZknode + "/" + collection;
             byte[] data;
             KeyedList<string, object> props;
             try
@@ -146,7 +145,7 @@ namespace ReindexAutomation.Client.Cloud
             {
                 // if there is no node, we will try and create it
                 // first try to make in case we are pre configuring
-                props = new KeyedList<string, object> { { CONFIGNAME_PROP, confSetName } };
+                props = new KeyedList<string, object> { { ConfignameProp, confSetName } };
                 try
                 {
                     await zkClient.makePath(path, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(props)),
@@ -160,7 +159,6 @@ namespace ReindexAutomation.Client.Cloud
                         throw e;
                     }
                     // if we fail creating, setdata
-                    // TODO: we should consider using version
                     await zkClient.setData(path, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(props)), true);
                 }
                 return;
@@ -169,21 +167,20 @@ namespace ReindexAutomation.Client.Cloud
             if (data != null)
             {
                 props = JsonConvert.DeserializeObject<KeyedList<string, object>>(Encoding.UTF8.GetString(data));
-                if (props.ContainsKey(CONFIGNAME_PROP))
+                if (props.ContainsKey(ConfignameProp))
                 {
-                    props[CONFIGNAME_PROP] = confSetName;
+                    props[ConfignameProp] = confSetName;
                 }
                 else
                 {
-                    props.Add(CONFIGNAME_PROP, confSetName);
+                    props.Add(ConfignameProp, confSetName);
                 }
             }
             else
             {
-                props = new KeyedList<string, object> { { CONFIGNAME_PROP, confSetName } };
+                props = new KeyedList<string, object> { { ConfignameProp, confSetName } };
             }
 
-            // TODO: we should consider using version
             await zkClient.setData(path, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(props)), true);
         }
 

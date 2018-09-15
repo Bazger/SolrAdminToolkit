@@ -99,8 +99,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Cloud\KeyedList.cs" />
-    <Compile Include="Cloud\Utils.cs" />
-    <Compile Include="Cloud\ZkNodeProps.cs" />
     <Compile Include="Converters\BooleanOrConverter.cs" />
     <Compile Include="Converters\BooleanAndConverter.cs" />
     <Compile Include="Dialogs\LinkConfigDialog.xaml.cs">

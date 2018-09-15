@@ -10,17 +10,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using org.apache.zookeeper.data;
 using ReindexAutomation.Client.Cloud;
 using ReindexAutomation.Client.Dialogs;
 
 namespace ReindexAutomation.Client.Domain
 {
-    //TODO: Add option to open ZK file in notepad (Double click on file)
-    //TODO: Open directory in browser
     //TODO: Add caution for bad dirs
     //TODO: Zk Node and Host make stable 
-    //TODO: Clear and LinkConfig buttons
-    //TODO: Disable ACCEPT Buttons if value is empty
+    //TODO: Put and get buttons
 
     public class ZookeeperManagmentViewModel : INotifyPropertyChanged
     {
@@ -147,14 +145,21 @@ namespace ReindexAutomation.Client.Domain
                 Directories = Directory.GetDirectories(path).Select(p => new TreeViewDirectory(p)).ToList(),
                 Files = Directory.GetFiles(path).Select(p => new TreeViewFile(p)).ToList(),
                 IsExpanded = true,
-                BackToPreviousMenuItemVisibility = Visibility.Visible
+                BackToPreviousMenuItemEnabled = true
             };
             selectedDir.OpenDirectoryEvent += OpenDirectory;
             selectedDir.BackToPreviousEvent += BackToPrevious;
+            selectedDir.ShowInExplorerEvent += ShowInExplorer;
             foreach (var dir in selectedDir.Directories)
             {
                 dir.OpenDirectoryEvent += OpenDirectory;
+                dir.ShowInExplorerEvent += ShowInExplorer;
             }
+            foreach (var file in selectedDir.Files)
+            {
+                file.ShowInExplorerEvent += ShowInExplorer;
+            }
+
 
             RootDirectories.Clear();
             RootDirectories.Add(selectedDir);
@@ -173,14 +178,14 @@ namespace ReindexAutomation.Client.Domain
                 }
                 catch (Exception)
                 {
-                    _snackbarMessageQueue.Enqueue("Could not connect to ZK host!", "OK", () => Trace.WriteLine("Actioned"));
+                    //_snackbarMessageQueue.Enqueue("Could not connect to ZK host!", "OK", () => Trace.WriteLine("Actioned"));
                     IsZkConnected = false;
                 }
             }
             return null;
         }
 
-        private static async Task<TreeViewDirectory> GetZkTree(SolrZkClient zkCnxn, string zooPath = "/", int depth = 2)
+        private async Task<TreeViewDirectory> GetZkTree(SolrZkClient zkCnxn, string zooPath = "/", int depth = 2)
         {
             var children = (await zkCnxn.getChildren(zooPath, null, false));
             if (!children.Any())
@@ -188,6 +193,7 @@ namespace ReindexAutomation.Client.Domain
                 return null;
             }
             var dir = zooPath.Split('/').Length <= depth ? new TreeViewDirectory(zooPath, zooPath) : new TreeViewDirectory(zooPath);
+            dir.ShowDataEvent += ShowData;
 
             if (zooPath.Last() != '/')
             {
@@ -200,7 +206,9 @@ namespace ReindexAutomation.Client.Domain
                 var entry = await GetZkTree(zkCnxn, zooPath + child);
                 if (entry == null)
                 {
-                    files.Add(new TreeViewFile(zooPath + child, child));
+                    var file = new TreeViewFile(zooPath + child, child);
+                    file.ShowDataEvent += ShowData;
+                    files.Add(file);
                 }
                 else
                 {
@@ -253,7 +261,6 @@ namespace ReindexAutomation.Client.Domain
             {
                 if (args is TreeViewFile zkFile)
                 {
-                    //TODO: save full path
                     _selectedZkPath = zkFile.Path;
                     return;
                 }
@@ -276,6 +283,72 @@ namespace ReindexAutomation.Client.Domain
                 var previousDir = Path.GetDirectoryName(dir.Path);
                 InitializeConfigsDirectory(previousDir);
             }
+        }
+
+        private void ShowInExplorer(object sender, EventArgs args)
+        {
+            var path = string.Empty;
+            switch (sender)
+            {
+                case TreeViewDirectory dir:
+                    path = dir.Path;
+                    break;
+                case TreeViewFile file:
+                    path = file.Path;
+                    break;
+            }
+            if (!Directory.Exists(path) && !File.Exists(path))
+            {
+                _snackbarMessageQueue.Enqueue("Path does not exist!", "OK", () => Trace.WriteLine("Actioned"));
+                return;
+            }
+            var argument = "/select, \"" + path + "\"";
+            Process.Start("explorer.exe", argument);
+        }
+
+        private void ShowData(object sender, EventArgs args)
+        {
+            var path = string.Empty;
+            switch (sender)
+            {
+                case TreeViewDirectory dir:
+                    path = dir.Path;
+                    break;
+                case TreeViewFile file:
+                    path = file.Path;
+                    break;
+            }
+            Task.Run(async () =>
+            {
+                using (var zkClient = new SolrZkClient($"{ZkHost}:{ZkPort}"))
+                {
+                    try
+                    {
+                        var data = await zkClient.getData(path, null, null, true);
+                        if (data == null)
+                        {
+                            _snackbarMessageQueue.Enqueue("There is no data to show!", "OK", () => Trace.WriteLine("Actioned"));
+                        }
+                        else
+                        {
+                            var relativePath = path.Replace("/", "\\");
+                            var dirPath = MainWindow.TempDirectory + Path.GetDirectoryName(relativePath);
+                            if (!Directory.Exists(dirPath))
+                            {
+                                Directory.CreateDirectory(dirPath);
+                            }
+                            var filePath = Path.Combine(dirPath, Path.GetFileName(path));
+                            File.WriteAllBytes(filePath, data);
+                            File.WriteAllBytes(filePath, data);
+                            Process.Start(filePath);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO: Show error;
+                    }
+                }
+            });
         }
 
         #region DownConfig
@@ -468,12 +541,8 @@ namespace ReindexAutomation.Client.Domain
 
         #endregion
 
-
         #region LinkConfig
 
-
-
-        #endregion
         public ICommand LinkConfigDialogCommand => new RelayCommand(ExecuteLinkConfigDialog);
 
         private async void ExecuteLinkConfigDialog(object o)
@@ -515,6 +584,9 @@ namespace ReindexAutomation.Client.Domain
                 }
             }
         }
+
+        #endregion
+
         #region DeletePath
 
         public ICommand DeltePathDialogCommand => new RelayCommand(ExecuteDeletePathDialog);
@@ -548,14 +620,14 @@ namespace ReindexAutomation.Client.Domain
                         //TODO: Show error;
                     }
                 }
-                //TODO: Do if ex was not throwens
+                //TODO: Do if ex was not throwen
                 var tree = await Task.Run(() => ConnectToZkTree(ZkHost, ZkPort));
                 ZkNode.Clear();
                 ZkNode.Add(tree);
             }
         }
 
-        #endregion   
+        #endregion
 
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -566,6 +638,12 @@ namespace ReindexAutomation.Client.Domain
         }
     }
 
+
+    public interface IContextMenu
+    {
+        bool OpenDirectoryMenuItemEnabled { get; set; }
+        bool BackToPreviousMenuItemEnabled { get; set; }
+    }
 
     public class TreeViewDirectory : IContextMenu
     {
@@ -581,8 +659,7 @@ namespace ReindexAutomation.Client.Domain
             Path = path;
             Name = name;
             IsExpanded = false;
-            OpenDirectoryMenuItemVisibility = Visibility.Visible;
-            BackToPreviousMenuItemVisibility = Visibility.Collapsed;
+            OpenDirectoryMenuItemEnabled = true;
 
             Directories = new List<TreeViewDirectory>();
             Files = new List<TreeViewFile>();
@@ -607,18 +684,16 @@ namespace ReindexAutomation.Client.Domain
 
         public event EventHandler OpenDirectoryEvent;
         public event EventHandler BackToPreviousEvent;
+        public event EventHandler ShowInExplorerEvent;
+        public event EventHandler ShowDataEvent;
 
         public ICommand OpenDirectoryCommand => new RelayCommand(_ => OpenDirectoryEvent?.Invoke(this, null));
         public ICommand BackToPreviousCommand => new RelayCommand(_ => BackToPreviousEvent?.Invoke(this, null));
+        public ICommand ShowInExplorerCommand => new RelayCommand(_ => ShowInExplorerEvent?.Invoke(this, null));
+        public ICommand ShowDataCommand => new RelayCommand(_ => ShowDataEvent?.Invoke(this, null));
 
-        public Visibility OpenDirectoryMenuItemVisibility { get; set; }
-        public Visibility BackToPreviousMenuItemVisibility { get; set; }
-    }
-
-    public interface IContextMenu
-    {
-        Visibility OpenDirectoryMenuItemVisibility { get; set; }
-        Visibility BackToPreviousMenuItemVisibility { get; set; }
+        public bool OpenDirectoryMenuItemEnabled { get; set; }
+        public bool BackToPreviousMenuItemEnabled { get; set; }
     }
 
     public class TreeViewFile : IContextMenu
@@ -634,11 +709,15 @@ namespace ReindexAutomation.Client.Domain
         {
             Path = path;
             Name = name;
-            OpenDirectoryMenuItemVisibility = Visibility.Collapsed;
-            BackToPreviousMenuItemVisibility = Visibility.Collapsed;
         }
 
-        public Visibility OpenDirectoryMenuItemVisibility { get; set; }
-        public Visibility BackToPreviousMenuItemVisibility { get; set; }
+        public bool OpenDirectoryMenuItemEnabled { get; set; }
+        public bool BackToPreviousMenuItemEnabled { get; set; }
+
+        public event EventHandler ShowInExplorerEvent;
+        public event EventHandler ShowDataEvent;
+
+        public ICommand ShowInExplorerCommand => new RelayCommand(_ => ShowInExplorerEvent?.Invoke(this, null));
+        public ICommand ShowDataCommand => new RelayCommand(_ => ShowDataEvent?.Invoke(this, null));
     }
 }

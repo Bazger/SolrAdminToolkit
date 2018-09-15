@@ -7,8 +7,12 @@
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              xmlns:materialDesignDemo="clr-namespace:ReindexAutomation.Client"
              xmlns:domain="clr-namespace:ReindexAutomation.Client.Domain"
+             xmlns:converters="clr-namespace:ReindexAutomation.Client.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" MaxWidth="600">
+    <UserControl.Resources>
+        <converters:BooleanAndConverter x:Key="BooleanAndConverter" />
+    </UserControl.Resources>
     <Grid Margin="16">
         <Grid.RowDefinitions>
             <RowDefinition />
@@ -19,20 +23,32 @@
         </Grid.RowDefinitions>
         <TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}" HorizontalAlignment="Left">Link config</TextBlock>
         <Separator Grid.Row="1" Style="{StaticResource MaterialDesignDarkSeparator}" Height="3" />
-        <ComboBox Grid.Row="2" Margin="3 20 3 0" VerticalAlignment="Bottom"                
+        <ComboBox Name="Collections"  Grid.Row="2" Margin="3 20 3 0" VerticalAlignment="Bottom"                
                   wpf:HintAssist.Hint="Collection"                          
                   Style="{StaticResource MaterialDesignFloatingHintComboBox}"
                   IsEditable="False" ItemsSource="{Binding Path=AvailableCollections}"  SelectedValue="{Binding Path=CollectionName}">
         </ComboBox>
-        <ComboBox Grid.Row="3" Margin="3 20 3 0" VerticalAlignment="Bottom"                
+        <ComboBox Name="Configs"  Grid.Row="3" Margin="3 20 3 0" VerticalAlignment="Bottom"                
                   wpf:HintAssist.Hint="Config"                          
                   Style="{StaticResource MaterialDesignFloatingHintComboBox}"
                   IsEditable="False" ItemsSource="{Binding Path=AvailableConfigs}"  SelectedValue="{Binding Path=ConfigName}">
         </ComboBox>
         <StackPanel Orientation="Horizontal" Grid.Row="4"
                     Margin="0 16 0 0">
-            <Button IsDefault="True" Style="{DynamicResource MaterialDesignFlatButton}"
+            <Button IsDefault="True"               
                     Command="{x:Static wpf:DialogHost.CloseDialogCommand}">
+                <Button.Style>
+                    <Style TargetType="{x:Type Button}" BasedOn="{StaticResource MaterialDesignFlatButton}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ElementName=Configs, Path=Text}" Value="">
+                                <Setter Property="Button.IsEnabled" Value="false" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ElementName=Collections, Path=Text}" Value="">
+                                <Setter Property="Button.IsEnabled" Value="false" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
                 <Button.CommandParameter>
                     <system:Boolean>True</system:Boolean>
                 </Button.CommandParameter>

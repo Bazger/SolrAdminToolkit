@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Security.Policy;
 using ReindexAutomation.Client.Domain;
 using MaterialDesignThemes.Wpf;
 using System.Threading;
@@ -19,10 +21,15 @@ namespace ReindexAutomation.Client
     /// </summary>
     public partial class MainWindow : Window
     {
+        public static readonly string TempDirectory = Path.Combine(Path.GetTempPath(), "SolrAdministrationToolKit");
+
         public static Snackbar Snackbar;
         public MainWindow()
         {
             InitializeComponent();
+
+            //Setting temp dir
+            Directory.CreateDirectory(TempDirectory);
 
             //Color Settings for this app
             var appSwatch = new SwatchesProvider().Swatches.First(
