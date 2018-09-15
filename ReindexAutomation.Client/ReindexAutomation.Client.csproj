@@ -65,6 +65,12 @@
     <Reference Include="Microsoft.Expression.Interactions, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\..\..\..\Downloads\MaterialDesignInXamlToolkit-master\MaterialDesignInXamlToolkit-master\packages\System.Windows.Interactivity.WPF.2.0.20525\lib\net40\Microsoft.Expression.Interactions.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\Downloads\MaterialDesignInXamlToolkit-master\MaterialDesignInXamlToolkit-master\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="PowerCollections, Version=1.0.2141.24679, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\..\Downloads\MaterialDesignInXamlToolkit-master\MaterialDesignInXamlToolkit-master\packages\XAct.Wintellect.PowerCollections.0.0.1\lib\net20\PowerCollections.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -92,11 +98,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Cloud\Utils.cs" />
+    <Compile Include="Cloud\ZkNodeProps.cs" />
     <Compile Include="Converters\BooleanOrConverter.cs" />
     <Compile Include="Converters\BooleanAndConverter.cs" />
+    <Compile Include="Dialogs\LinkConfigDialog.xaml.cs">
+      <DependentUpon>LinkConfigDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\DeltePathDialog.xaml.cs">
       <DependentUpon>DeltePathDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Domain\LinkConfigDialogViewModel.cs" />
     <Compile Include="Domain\RelayCommand.cs" />
     <Compile Include="Domain\DataImportManagmentViewModel.cs" />
     <Compile Include="Domain\DocumentationLink.cs" />
@@ -150,13 +162,16 @@
     <Compile Include="SolrIndexManagment.xaml.cs">
       <DependentUpon>SolrIndexManagment.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Utils\FileHelper.cs" />
     <Compile Include="ZookeeperManagment.xaml.cs">
       <DependentUpon>ZookeeperManagment.xaml</DependentUpon>
     </Compile>
     <Compile Include="Home.xaml.cs">
       <DependentUpon>Home.xaml</DependentUpon>
     </Compile>
+    <Page Include="Dialogs\LinkConfigDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Dialogs\DeltePathDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

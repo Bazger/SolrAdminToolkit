@@ -20,6 +20,7 @@ namespace ReindexAutomation.Client.Domain
     //TODO: Add caution for bad dirs
     //TODO: Zk Node and Host make stable 
     //TODO: Clear and LinkConfig buttons
+    //TODO: Disable ACCEPT Buttons if value is empty
 
     public class ZookeeperManagmentViewModel : INotifyPropertyChanged
     {
@@ -467,7 +468,54 @@ namespace ReindexAutomation.Client.Domain
 
         #endregion
 
-        #region Clear
+
+        #region LinkConfig
+
+
+
+        #endregion
+        public ICommand LinkConfigDialogCommand => new RelayCommand(ExecuteLinkConfigDialog);
+
+        private async void ExecuteLinkConfigDialog(object o)
+        {
+            //TODO: Get configs and collections const
+            var collections = ZkNode[0].Directories.ToList().FirstOrDefault(dir => dir.Name.ToLower().Contains("collections"))?
+                .Directories.Select(config => config.Name).ToList();
+            var configs = ZkNode[0].Directories.ToList().FirstOrDefault(dir => dir.Name.ToLower().Contains("configs"))?
+                .Directories.Select(config => config.Name).ToList();
+
+            //let's set up a little MVVM, cos that's what the cool kids are doing:
+            var context = new LinkConfigDialogViewModel
+            {
+                AvailableCollections = collections != null ? new ObservableCollection<string>(collections) : new ObservableCollection<string>(),
+                AvailableConfigs = configs != null ? new ObservableCollection<string>(configs) : new ObservableCollection<string>()
+            };
+            var view = new LinkConfigDialog()
+            {
+                DataContext = context
+            };
+
+            //show the dialog
+            var result = await DialogHost.Show(view, "RootDialog");
+
+            //check the result...
+            if (result != null && (bool)result)
+            {
+                using (var zkClient = new SolrZkClient($"{ZkHost}:{ZkPort}"))
+                {
+                    try
+                    {
+                        var manager = new ZkConfigManager(zkClient);
+                        await manager.linkConfSet(context.CollectionName, context.ConfigName);
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO: Show error;
+                    }
+                }
+            }
+        }
+        #region DeletePath
 
         public ICommand DeltePathDialogCommand => new RelayCommand(ExecuteDeletePathDialog);
 

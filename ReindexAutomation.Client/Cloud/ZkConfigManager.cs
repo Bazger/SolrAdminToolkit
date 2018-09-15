@@ -3,16 +3,21 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using org.apache.zookeeper;
+using Wintellect.PowerCollections;
 
 namespace ReindexAutomation.Client.Cloud
 {
     public class ZkConfigManager
     {
         private const string ConfigsZKnode = "/configs";
+        private const string COLLECTIONS_ZKNODE = "/collections";
+        private const string CONFIGNAME_PROP = "configName";
 
         private static readonly Regex UploadFilenameExcludeRegex = new Regex("^\\..*$");
 
@@ -122,6 +127,67 @@ namespace ReindexAutomation.Client.Cloud
                 }
                 throw;
             }
+        }
+
+        //Real place of this func is on ZkController.class in java version of code
+        //TODO: Serialize normally
+        public async Task linkConfSet(string collection, string confSetName)
+        {
+            //This const palced in ZkStateReader.class in java version of code
+            var path = COLLECTIONS_ZKNODE + "/" + collection;
+            //log.debug("Load collection config from:" + path);
+            byte[] data;
+            ZkNodeProps props;
+            try
+            {
+                data = await zkClient.getData(path, null, null, true);
+            }
+            catch (KeeperException.NoNodeException e)
+            {
+                // if there is no node, we will try and create it
+                // first try to make in case we are pre configuring
+                props = new ZkNodeProps(CONFIGNAME_PROP, confSetName);
+                try
+                {
+                    await zkClient.makePath(path, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(props)),
+                        CreateMode.PERSISTENT, null, true);
+                }
+                catch (KeeperException ex)
+                {
+                    // it's okay if the node already exists
+                    if (ex.getCode() != KeeperException.Code.NODEEXISTS)
+                    {
+                        throw e;
+                    }
+                    // if we fail creating, setdata
+                    // TODO: we should consider using version
+                    await zkClient.setData(path, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(props)), true);
+                }
+                return;
+            }
+            // we found existing data, let's update it
+            if (data != null)
+            {
+                props = ZkNodeProps.load(data);
+                var newProps = new OrderedDictionary<string, object>();
+                newProps.AddMany(props.getProperties());
+                if (newProps.ContainsKey(CONFIGNAME_PROP))
+                {
+                    newProps.Replace(CONFIGNAME_PROP, confSetName);
+                }
+                else
+                {
+                    newProps.Add(CONFIGNAME_PROP, confSetName);
+                }
+                props = new ZkNodeProps(newProps);
+            }
+            else
+            {
+                props = new ZkNodeProps(CONFIGNAME_PROP, confSetName);
+            }
+
+            // TODO: we should consider using version
+            await zkClient.setData(path, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(props)), true);
         }
 
 
