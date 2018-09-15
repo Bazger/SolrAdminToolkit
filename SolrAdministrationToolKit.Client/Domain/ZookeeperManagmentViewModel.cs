@@ -40,7 +40,7 @@ namespace SolrAdministrationToolKit.Client.Domain
             RootDirectories = new ObservableCollection<TreeViewDirectory>();
 
             ConfigsPath = "C:\\Temp";
-            InitializeConfigsDirectory(ConfigsPath);
+            //InitializeConfigsDirectory(ConfigsPath);
         }
 
         public string ConfigsPath
