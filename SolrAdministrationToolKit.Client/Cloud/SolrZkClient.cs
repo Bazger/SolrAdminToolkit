@@ -435,12 +435,9 @@ namespace SolrAdministrationToolKit.Client.Cloud
         /// <param name="keeper"></param>
         void updateKeeper(ZooKeeper keeper)
         {
-            ZooKeeper oldKeeper = this.keeper;
+            var oldKeeper = this.keeper;
             this.keeper = keeper;
-            if (oldKeeper != null)
-            {
-                oldKeeper.closeAsync().Wait();
-            }
+            oldKeeper?.closeAsync().Wait();
         }
 
         public async Task closeKeeper(ZooKeeper keeper)
@@ -460,7 +457,6 @@ namespace SolrAdministrationToolKit.Client.Cloud
         {
             return zkHost.Contains("/");
         }
-
 
         public static Exception checkInterrupted(Exception ex)
         {
@@ -522,9 +518,9 @@ namespace SolrAdministrationToolKit.Client.Cloud
             await ZkMaintenanceUtils.clean(this, path, nodeFilter);
         }
 
-        public void upConfig(string confPath, string confName)
+        public async Task upConfig(string confPath, string confName)
         {
-            ZkMaintenanceUtils.upConfig(this, confPath, confName);
+            await ZkMaintenanceUtils.upConfig(this, confPath, confName);
         }
 
         public async Task<string> listZnode(string path, bool recurse)

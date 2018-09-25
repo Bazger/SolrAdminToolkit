@@ -14,14 +14,16 @@ using SolrAdministrationToolKit.Client.Dialogs;
 
 namespace SolrAdministrationToolKit.Client.Domain
 {
-    //TODO: Add caution for bad dirs
     //TODO: Cancel to upload or download
     public class ZookeeperManagmentViewModel : INotifyPropertyChanged
     {
+        private const int CheckDialogShowingTimeMillis = 300;
+
         private readonly ISnackbarMessageQueue _snackbarMessageQueue;
 
         private string _configsPath;
 
+        private bool _isDirectoryInitialized;
         private bool _isDirectorySelected;
         private bool _isFileSelected;
         private bool _isDirectoryTreeItemSelected;
@@ -40,7 +42,7 @@ namespace SolrAdministrationToolKit.Client.Domain
             RootDirectories = new ObservableCollection<TreeViewDirectory>();
 
             ConfigsPath = "C:\\Temp";
-            //InitializeConfigsDirectory(ConfigsPath);
+            InitializeConfigsDirectory(ConfigsPath);
         }
 
         public string ConfigsPath
@@ -84,6 +86,15 @@ namespace SolrAdministrationToolKit.Client.Domain
             }
         }
 
+        public bool IsDirectoryInitialized
+        {
+            get { return _isDirectoryInitialized; }
+            set
+            {
+                this.MutateVerbose(ref _isDirectoryInitialized, value, RaisePropertyChanged());
+            }
+        }
+
         public bool IsZkConnected
         {
             get { return _isZkConnected; }
@@ -112,16 +123,25 @@ namespace SolrAdministrationToolKit.Client.Domain
         }
 
         public ICommand ApplyCommand => new RelayCommand(_ => InitializeConfigsDirectory(ConfigsPath));
-        public ICommand ConnectCommand => new RelayCommand(async _ =>
+        public ICommand ConnectCommand => new RelayCommand(_ =>
         {
-            var tree = await Task.Run(() => ConnectToZkTree(ZkHost, ZkPort));
-            ZkNode.Clear();
-            ZkNode.Add(tree);
+            UpdateZkTree(ZkHost, ZkPort);
         });
+
+        private async void UpdateZkTree(string zkHost, string zkPort)
+        {
+            var tree = await Task.Run(() => ConnectToZkTree(zkHost, zkPort));
+            if (tree != null)
+            {
+                ZkNode.Clear();
+                ZkNode.Add(tree);
+            }
+        }
 
         public ICommand DirectoriesTreeSelectedItemChangedCommand => new RelayCommand(DirectoryTree_SelectedItemChanged);
         public ICommand ZkTreeSelectedItemChangedCommand => new RelayCommand(ZkTree_SelectedItemChanged);
 
+        public ObservableCollection<string> AAA { get; }
         public ObservableCollection<TreeViewDirectory> RootDirectories { get; }
         public ObservableCollection<TreeViewDirectory> ZkNode { get; }
 
@@ -145,6 +165,8 @@ namespace SolrAdministrationToolKit.Client.Domain
                 IsExpanded = true,
                 BackToPreviousMenuItemEnabled = true
             };
+
+            //EVENTS
             selectedDir.OpenDirectoryEvent += OpenDirectory;
             selectedDir.BackToPreviousEvent += BackToPrevious;
             selectedDir.ShowInExplorerEvent += ShowInExplorer;
@@ -161,6 +183,8 @@ namespace SolrAdministrationToolKit.Client.Domain
 
             RootDirectories.Clear();
             RootDirectories.Add(selectedDir);
+
+            IsDirectoryInitialized = true;
         }
 
         private TreeViewDirectory ConnectToZkTree(string zkHost, string zkPort)
@@ -205,6 +229,11 @@ namespace SolrAdministrationToolKit.Client.Domain
             var dirs = new List<TreeViewDirectory>();
             foreach (var child in children)
             {
+                if (await ZkMaintenanceUtils.isEphemeral(zkCnxn, zooPath + child))
+                {
+                    //TODO: Show or not to show (add the checkbox)
+                    continue;
+                }
                 var entry = await GetZkTree(zkCnxn, zooPath + child);
                 if (entry == null)
                 {
@@ -403,7 +432,6 @@ namespace SolrAdministrationToolKit.Client.Domain
             eventArgs.Session.UpdateContent(new Dialogs.ProgressDialog());
             //note, you can also grab the session when the dialog opens via the DialogOpenedEventHandler            
 
-            //lets run a fake operation for 3 seconds then close this baby.
             await Task.Run(async () =>
             {
                 using (var zkClient = new SolrZkClient($"{ZkHostConnected}:{ZkPortConnected}"))
@@ -417,9 +445,13 @@ namespace SolrAdministrationToolKit.Client.Domain
                         //TODO: Show error;
                     }
                 }
-            }).ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+            }).ContinueWith((t, _) => { }, null,
                 TaskScheduler.FromCurrentSynchronizationContext());
             //TODO: Do if ex was not throwen
+            eventArgs.Session.UpdateContent(new CheckDialog());
+            await Task.Delay(TimeSpan.FromMilliseconds(CheckDialogShowingTimeMillis))
+                .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+                    TaskScheduler.FromCurrentSynchronizationContext());
             InitializeConfigsDirectory(RootDirectories[0].Path);
         }
 
@@ -477,26 +509,27 @@ namespace SolrAdministrationToolKit.Client.Domain
             eventArgs.Session.UpdateContent(new Dialogs.ProgressDialog());
             //note, you can also grab the session when the dialog opens via the DialogOpenedEventHandler            
 
-            //lets run a fake operation for 3 seconds then close this baby.
-            await Task.Run(() =>
+            await Task.Run(async () =>
             {
                 using (var zkClient = new SolrZkClient($"{ZkHostConnected}:{ZkPortConnected}"))
                 {
                     try
                     {
-                        zkClient.upConfig(dir, configName);
+                        await zkClient.upConfig(dir, configName);
                     }
                     catch (Exception ex)
                     {
                         //TODO: Show error;
                     }
                 }
-            }).ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+            }).ContinueWith((t, _) => { }, null,
                 TaskScheduler.FromCurrentSynchronizationContext());
             //TODO: Do if ex was not throwen
-            var tree = await Task.Run(() => ConnectToZkTree(ZkHostConnected, ZkPortConnected));
-            ZkNode.Clear();
-            ZkNode.Add(tree);
+            eventArgs.Session.UpdateContent(new CheckDialog());
+            await Task.Delay(TimeSpan.FromMilliseconds(CheckDialogShowingTimeMillis))
+                .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+                    TaskScheduler.FromCurrentSynchronizationContext());
+            UpdateZkTree(ZkHostConnected, ZkPortConnected);
         }
 
         #endregion
@@ -535,9 +568,7 @@ namespace SolrAdministrationToolKit.Client.Domain
                     }
                 }
                 //TODO: Do if ex was not throwens
-                var tree = await Task.Run(() => ConnectToZkTree(ZkHostConnected, ZkPortConnected));
-                ZkNode.Clear();
-                ZkNode.Add(tree);
+                UpdateZkTree(ZkHostConnected, ZkPortConnected);
             }
         }
 
@@ -590,7 +621,6 @@ namespace SolrAdministrationToolKit.Client.Domain
             eventArgs.Session.UpdateContent(new ProgressDialog());
             //note, you can also grab the session when the dialog opens via the DialogOpenedEventHandler            
 
-            //lets run a fake operation for 3 seconds then close this baby.
             await Task.Run(async () =>
             {
                 using (var zkClient = new SolrZkClient($"{ZkHostConnected}:{ZkPortConnected}"))
@@ -604,12 +634,14 @@ namespace SolrAdministrationToolKit.Client.Domain
                         //TODO: Show error;
                     }
                 }
-            }).ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+            }).ContinueWith((t, _) => { }, null,
                 TaskScheduler.FromCurrentSynchronizationContext());
             //TODO: Do if ex was not throwen
-            var tree = await Task.Run(() => ConnectToZkTree(ZkHostConnected, ZkPortConnected));
-            ZkNode.Clear();
-            ZkNode.Add(tree);
+            eventArgs.Session.UpdateContent(new CheckDialog());
+            await Task.Delay(TimeSpan.FromMilliseconds(CheckDialogShowingTimeMillis))
+                .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+                    TaskScheduler.FromCurrentSynchronizationContext());
+            UpdateZkTree(ZkHostConnected, ZkPortConnected);
         }
 
         #endregion
@@ -659,7 +691,6 @@ namespace SolrAdministrationToolKit.Client.Domain
             eventArgs.Session.UpdateContent(new ProgressDialog());
             //note, you can also grab the session when the dialog opens via the DialogOpenedEventHandler            
 
-            //lets run a fake operation for 3 seconds then close this baby.
             await Task.Run(async () =>
             {
                 using (var zkClient = new SolrZkClient($"{ZkHostConnected}:{ZkPortConnected}"))
@@ -673,9 +704,13 @@ namespace SolrAdministrationToolKit.Client.Domain
                         //TODO: Show error;
                     }
                 }
-            }).ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+            }).ContinueWith((t, _) => { }, null,
                 TaskScheduler.FromCurrentSynchronizationContext());
             //TODO: Do if ex was not throwen
+            eventArgs.Session.UpdateContent(new CheckDialog());
+            await Task.Delay(TimeSpan.FromMilliseconds(CheckDialogShowingTimeMillis))
+                .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+                    TaskScheduler.FromCurrentSynchronizationContext());
             InitializeConfigsDirectory(RootDirectories[0].Path);
         }
 
@@ -743,27 +778,44 @@ namespace SolrAdministrationToolKit.Client.Domain
             };
 
             //show the dialog
-            var result = await DialogHost.Show(view, "RootDialog");
+            await DialogHost.Show(view, "RootDialog", DeletePathClosingEventHandler);
+        }
 
-            //check the result...
-            if (result != null && (bool)result)
+        private async void DeletePathClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
+        {
+            if ((bool)eventArgs.Parameter == false) { return; }
+
+            var dialogModel = (eventArgs.Session.Content as UserControl)?.DataContext as CommonDialogViewModel;
+            var zkPath = dialogModel?.Name;
+
+            //OK, lets cancel the close...
+            eventArgs.Cancel();
+
+            //...now, lets update the "session" with some new content!
+            eventArgs.Session.UpdateContent(new ProgressDialog());
+            //note, you can also grab the session when the dialog opens via the DialogOpenedEventHandler            
+
+            await Task.Run(async () =>
             {
                 using (var zkClient = new SolrZkClient($"{ZkHostConnected}:{ZkPortConnected}"))
                 {
                     try
                     {
-                        await zkClient.clean(context.Name);
+                        await zkClient.clean(zkPath);
                     }
                     catch (Exception ex)
                     {
                         //TODO: Show error;
                     }
                 }
-                //TODO: Do if ex was not throwen
-                var tree = await Task.Run(() => ConnectToZkTree(ZkHostConnected, ZkPortConnected));
-                ZkNode.Clear();
-                ZkNode.Add(tree);
-            }
+            }).ContinueWith((t, _) => { }, null,
+                TaskScheduler.FromCurrentSynchronizationContext());
+            eventArgs.Session.UpdateContent(new CheckDialog());
+            await Task.Delay(TimeSpan.FromMilliseconds(CheckDialogShowingTimeMillis))
+                .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+                    TaskScheduler.FromCurrentSynchronizationContext());
+            //TODO: Do if ex was not throwen
+            UpdateZkTree(ZkHostConnected, ZkPortConnected);
         }
 
         #endregion

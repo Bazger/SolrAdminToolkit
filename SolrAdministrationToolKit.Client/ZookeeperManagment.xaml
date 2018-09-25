@@ -28,9 +28,14 @@
                     <Button
                             Style="{StaticResource CommandButton}"
                             Command="{Binding DownConfigDialogCommand}"
-                            IsEnabled="{Binding Path=IsZkConnected}"
                             ToolTip="Download configuration from zk"
                             Margin="6 5 6 5">
+                        <Button.IsEnabled>
+                            <MultiBinding Converter="{StaticResource BooleanAndConverter}">
+                                <Binding Path="IsDirectoryInitialized"></Binding>
+                                <Binding Path="IsZkConnected"></Binding>
+                            </MultiBinding>
+                        </Button.IsEnabled>
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="FolderDownload" Width="20" Height="20"/>
                             <TextBlock Text="DownConfig" Margin="8 0 0 0"  VerticalAlignment="Center"/>
@@ -83,8 +88,13 @@
                         Style="{StaticResource CommandButton}"                            
                         Command="{Binding GetDialogCommand}"
                         ToolTip="Get file or directory from zk node(s)"
-                        IsEnabled="{Binding Path=IsZkPathSelected}"
                         Margin="6 5 6 5">
+                        <Button.IsEnabled>
+                            <MultiBinding Converter="{StaticResource BooleanAndConverter}">
+                                <Binding Path="IsDirectoryInitialized"></Binding>
+                                <Binding Path="IsZkPathSelected"></Binding>
+                            </MultiBinding>
+                        </Button.IsEnabled>
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Download" Width="20" Height="20"/>
                             <TextBlock Text="Get" Margin="8 0 0 0"   VerticalAlignment="Center"/>

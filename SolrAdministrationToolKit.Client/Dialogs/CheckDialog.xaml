@@ -1,0 +1,17 @@
+﻿<UserControl x:Class="SolrAdministrationToolKit.Client.Dialogs.CheckDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d">
+    <!--<materialDesign:PackIcon Kind="Check" Width="24" Height="24" Margin="16" Foreground="ForestGreen"/>-->
+    <StackPanel>
+        <Button ToolTipService.InitialShowDelay="0"
+                Style="{DynamicResource MaterialDesignFlatButton}" Width="120" Height="120">
+            <StackPanel Orientation="Horizontal">
+                <materialDesign:PackIcon Kind="Check" Width="48" Height="48" />
+            </StackPanel>
+        </Button>
+    </StackPanel>
+</UserControl>

@@ -104,6 +104,9 @@
     <Compile Include="Cloud\KeyedList.cs" />
     <Compile Include="Converters\BooleanOrConverter.cs" />
     <Compile Include="Converters\BooleanAndConverter.cs" />
+    <Compile Include="Dialogs\CheckDialog.xaml.cs">
+      <DependentUpon>CheckDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Dialogs\PutDialog.xaml.cs">
       <DependentUpon>PutDialog.xaml</DependentUpon>
     </Compile>
@@ -115,6 +118,12 @@
     </Compile>
     <Compile Include="Dialogs\DeletePathDialog.xaml.cs">
       <DependentUpon>DeletePathDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\SampleDialog.xaml.cs">
+      <DependentUpon>SampleDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\SampleMessageDialog.xaml.cs">
+      <DependentUpon>SampleMessageDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Domain\TransferDialogViewModel.cs" />
     <Compile Include="Domain\LinkConfigDialogViewModel.cs" />
@@ -147,13 +156,7 @@
     <Compile Include="Domain\MainWindowViewModel.cs" />
     <Compile Include="Domain\NotifyPropertyChangedExtension.cs" />
     <Compile Include="Domain\Section.cs" />
-    <Compile Include="Dialogs\SampleDialog.xaml.cs">
-      <DependentUpon>SampleDialog.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Domain\CommonDialogViewModel.cs" />
-    <Compile Include="Dialogs\SampleMessageDialog.xaml.cs">
-      <DependentUpon>SampleMessageDialog.xaml</DependentUpon>
-    </Compile>
     <Compile Include="DataImportManagment.xaml.cs">
       <DependentUpon>DataImportManagment.xaml</DependentUpon>
     </Compile>
@@ -177,6 +180,10 @@
     <Compile Include="Home.xaml.cs">
       <DependentUpon>Home.xaml</DependentUpon>
     </Compile>
+    <Page Include="Dialogs\CheckDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Dialogs\PutDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -193,15 +200,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Domain\DocumentationLinks.xaml">
-      <SubType>Designer</SubType>
+    <Page Include="Dialogs\SampleDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Dialogs\SampleMessageDialog.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
-    <Page Include="Dialogs\SampleDialog.xaml">
+    <Page Include="Domain\DocumentationLinks.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

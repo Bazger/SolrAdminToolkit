@@ -129,7 +129,6 @@ namespace SolrAdministrationToolKit.Client.Cloud
         }
 
         //Real place of this func is on ZkController.class in java version of code
-        //TODO: Serialize normally
         public async Task linkConfSet(string collection, string confSetName)
         {
             //This const palced in ZkStateReader.class in java version of code

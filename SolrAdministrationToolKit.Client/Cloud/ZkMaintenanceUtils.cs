@@ -11,12 +11,10 @@ using org.apache.zookeeper;
 
 namespace SolrAdministrationToolKit.Client.Cloud
 {
-    //TODO: Work on Async
     //TODO: Work on InteruptException
     public static class ZkMaintenanceUtils
     {
         private static string ZKNODE_DATA_FILE = "zknode.data";
-
 
         //TODO: Check if works
         #region CHECK IF WORKS
@@ -248,12 +246,12 @@ namespace SolrAdministrationToolKit.Client.Cloud
         }
 
         // This not just a copy operation since the config manager takes care of construction the znode path to configsets
-        public static void upConfig(SolrZkClient zkClient, string confPath, string confName)
+        public static async Task upConfig(SolrZkClient zkClient, string confPath, string confName)
         {
             ZkConfigManager manager = new ZkConfigManager(zkClient);
 
             // Try to download the configset
-            manager.uploadConfigDir(confPath, confName);
+            await manager.uploadConfigDir(confPath, confName);
         }
 
         /// <summary>
@@ -366,13 +364,13 @@ namespace SolrAdministrationToolKit.Client.Cloud
             }
         }
 
-        private static async Task<bool> isEphemeral(SolrZkClient zkClient, string zkPath)
+        public static async Task<bool> isEphemeral(SolrZkClient zkClient, string zkPath)
         {
             var znodeStat = await zkClient.exists(zkPath, null, true);
             return znodeStat.getEphemeralOwner() != 0;
         }
 
-        private static async Task<int> copyDataDown(SolrZkClient zkClient, string zkPath, string filePath)
+        public static async Task<int> copyDataDown(SolrZkClient zkClient, string zkPath, string filePath)
         {
             var data = await zkClient.getData(zkPath, null, null, true);
             if (data == null || data.Length <= 1)
@@ -480,7 +478,7 @@ namespace SolrAdministrationToolKit.Client.Cloud
         }
 
         // Take into account Windows file separators when making a Znode's name.
-        public static string createZkNodeName(string zkRoot, string root, string file)
+        private static string createZkNodeName(string zkRoot, string root, string file)
         {
             var relativePath = GetRelativePath(file, root);
             // Windows shenanigans
@@ -543,7 +541,7 @@ namespace SolrAdministrationToolKit.Client.Cloud
             return Uri.UnescapeDataString(folderUri.MakeRelativeUri(pathUri).ToString().Replace('/', Path.DirectorySeparatorChar));
         }
 
-        public static bool IsDirectory(string path)
+        private static bool IsDirectory(string path)
         {
             FileAttributes attr = File.GetAttributes(path);
             if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
