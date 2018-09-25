@@ -4,14 +4,27 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-             mc:Ignorable="d">
-    <!--<materialDesign:PackIcon Kind="Check" Width="24" Height="24" Margin="16" Foreground="ForestGreen"/>-->
-    <StackPanel>
+             mc:Ignorable="d" Width="120" Height="120">
+    <materialDesign:PackIcon Name="CheckIcon"  VerticalAlignment="Center" HorizontalAlignment="Center" Kind="Check" Width="48" Height="48" Margin="16" Foreground="LimeGreen" Opacity="0">
+        <materialDesign:PackIcon.Triggers>
+            <EventTrigger RoutedEvent="materialDesign:PackIcon.Loaded">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation 
+                            Storyboard.TargetName="CheckIcon"
+                            Storyboard.TargetProperty="(materialDesign:PackIcon.Opacity)" 
+                            From="0" To="1" Duration="0:0:0.400"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </materialDesign:PackIcon.Triggers>
+    </materialDesign:PackIcon>
+    <!--<StackPanel>
         <Button ToolTipService.InitialShowDelay="0"
                 Style="{DynamicResource MaterialDesignFlatButton}" Width="120" Height="120">
             <StackPanel Orientation="Horizontal">
                 <materialDesign:PackIcon Kind="Check" Width="48" Height="48" />
             </StackPanel>
         </Button>
-    </StackPanel>
+    </StackPanel>-->
 </UserControl>

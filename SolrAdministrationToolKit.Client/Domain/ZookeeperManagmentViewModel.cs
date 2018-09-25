@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using SolrAdministrationToolKit.Client.Cloud;
@@ -15,9 +16,10 @@ using SolrAdministrationToolKit.Client.Dialogs;
 namespace SolrAdministrationToolKit.Client.Domain
 {
     //TODO: Cancel to upload or download
+    //TODO: Make path and Link config setup with new dialogs
     public class ZookeeperManagmentViewModel : INotifyPropertyChanged
     {
-        private const int CheckDialogShowingTimeMillis = 300;
+        private const int CheckDialogShowingTimeMillis = 500;
 
         private readonly ISnackbarMessageQueue _snackbarMessageQueue;
 
@@ -490,7 +492,10 @@ namespace SolrAdministrationToolKit.Client.Domain
 
         private async void UpConfigClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
         {
-            if ((bool)eventArgs.Parameter == false) { return; }
+            if (Convert.ToBoolean(eventArgs.Parameter) == false)
+            {
+                return;
+            }
 
             var dialogModel = (eventArgs.Session.Content as UserControl)?.DataContext as ConfigDialogViewModel;
             var dir = dialogModel?.Directory;

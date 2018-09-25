@@ -13,7 +13,7 @@
         <ProgressBar Style="{DynamicResource MaterialDesignCircularProgressBar}" HorizontalAlignment="Center" Margin="16" IsIndeterminate="True" Width="24" Height="24" Value="33" />
         <Button Style="{StaticResource MaterialDesignFlatButton}" IsCancel="True" 
                 Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
-                CommandParameter="False"
+                CommandParameter="false"
                 HorizontalAlignment="Center">CANCEL</Button>
     </StackPanel>
 </UserControl>
