@@ -9,9 +9,9 @@
                  Style="{DynamicResource MaterialDesignCircularProgressBar}"
                  IsIndeterminate="True"
                  Value="33"/>-->
-    <StackPanel Margin="16">
+    <StackPanel Name="Panel" Margin="16">
         <ProgressBar Style="{DynamicResource MaterialDesignCircularProgressBar}" HorizontalAlignment="Center" Margin="16" IsIndeterminate="True" Width="24" Height="24" Value="33" />
-        <Button Style="{StaticResource MaterialDesignFlatButton}" IsCancel="True" 
+        <Button Name="CancelButton" Style="{StaticResource MaterialDesignFlatButton}" IsCancel="True" 
                 Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
                 CommandParameter="false"
                 HorizontalAlignment="Center">CANCEL</Button>

@@ -23,6 +23,8 @@ namespace SolrAdministrationToolKit.Client.Domain
 
         private readonly ISnackbarMessageQueue _snackbarMessageQueue;
 
+        private CancellationTokenSource _cts;
+
         private string _configsPath;
 
         private bool _isDirectoryInitialized;
@@ -415,7 +417,11 @@ namespace SolrAdministrationToolKit.Client.Domain
 
         private async void DownConfigClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
         {
-            if ((bool)eventArgs.Parameter == false) { return; }
+            if (Convert.ToBoolean(eventArgs.Parameter) == false)
+            {
+                _cts.Cancel();
+                return;
+            }
 
             var dialogModel = (eventArgs.Session.Content as UserControl)?.DataContext as ConfigDialogViewModel;
             var dir = dialogModel?.Directory;
@@ -426,6 +432,8 @@ namespace SolrAdministrationToolKit.Client.Domain
                 //TODO: Throw the snackbar
                 return;
             }
+
+            _cts = new CancellationTokenSource();
 
             //OK, lets cancel the close...
             eventArgs.Cancel();
@@ -440,7 +448,7 @@ namespace SolrAdministrationToolKit.Client.Domain
                 {
                     try
                     {
-                        await zkClient.downConfig(configName, dir);
+                        await zkClient.downConfig(configName, dir, _cts.Token);
                     }
                     catch (Exception ex)
                     {
@@ -450,10 +458,13 @@ namespace SolrAdministrationToolKit.Client.Domain
             }).ContinueWith((t, _) => { }, null,
                 TaskScheduler.FromCurrentSynchronizationContext());
             //TODO: Do if ex was not throwen
-            eventArgs.Session.UpdateContent(new CheckDialog());
-            await Task.Delay(TimeSpan.FromMilliseconds(CheckDialogShowingTimeMillis))
-                .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
-                    TaskScheduler.FromCurrentSynchronizationContext());
+            if (!_cts.IsCancellationRequested)
+            {
+                eventArgs.Session.UpdateContent(new CheckDialog());
+                await Task.Delay(TimeSpan.FromMilliseconds(CheckDialogShowingTimeMillis))
+                    .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+                        TaskScheduler.FromCurrentSynchronizationContext());
+            }
             InitializeConfigsDirectory(RootDirectories[0].Path);
         }
 
@@ -494,6 +505,7 @@ namespace SolrAdministrationToolKit.Client.Domain
         {
             if (Convert.ToBoolean(eventArgs.Parameter) == false)
             {
+                _cts.Cancel();
                 return;
             }
 
@@ -506,6 +518,8 @@ namespace SolrAdministrationToolKit.Client.Domain
                 //TODO: Throw the snackbar
                 return;
             }
+
+            _cts = new CancellationTokenSource();
 
             //OK, lets cancel the close...
             eventArgs.Cancel();
@@ -520,7 +534,7 @@ namespace SolrAdministrationToolKit.Client.Domain
                 {
                     try
                     {
-                        await zkClient.upConfig(dir, configName);
+                        await zkClient.upConfig(dir, configName, _cts.Token);
                     }
                     catch (Exception ex)
                     {
@@ -530,10 +544,13 @@ namespace SolrAdministrationToolKit.Client.Domain
             }).ContinueWith((t, _) => { }, null,
                 TaskScheduler.FromCurrentSynchronizationContext());
             //TODO: Do if ex was not throwen
-            eventArgs.Session.UpdateContent(new CheckDialog());
-            await Task.Delay(TimeSpan.FromMilliseconds(CheckDialogShowingTimeMillis))
-                .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
-                    TaskScheduler.FromCurrentSynchronizationContext());
+            if (!_cts.IsCancellationRequested)
+            {
+                eventArgs.Session.UpdateContent(new CheckDialog());
+                await Task.Delay(TimeSpan.FromMilliseconds(CheckDialogShowingTimeMillis))
+                    .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+                        TaskScheduler.FromCurrentSynchronizationContext());
+            }
             UpdateZkTree(ZkHostConnected, ZkPortConnected);
         }
 
@@ -556,25 +573,48 @@ namespace SolrAdministrationToolKit.Client.Domain
             };
 
             //show the dialog
-            var result = await DialogHost.Show(view, "RootDialog");
+            await DialogHost.Show(view, "RootDialog", MakePathClosingEventHandler);
+        }
 
-            //check the result...
-            if (result != null && (bool)result)
+        private async void MakePathClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
+        {
+            if (Convert.ToBoolean(eventArgs.Parameter) == false)
+            {
+                return;
+            }
+
+            var dialogModel = (eventArgs.Session.Content as UserControl)?.DataContext as CommonDialogViewModel;
+            var path = dialogModel?.Name;
+
+
+            //OK, lets cancel the close...
+            eventArgs.Cancel();
+
+            //...now, lets update the "session" with some new content!
+            eventArgs.Session.UpdateContent(new ProgressDialog(false));
+            //note, you can also grab the session when the dialog opens via the DialogOpenedEventHandler            
+
+            await Task.Run(async () =>
             {
                 using (var zkClient = new SolrZkClient($"{ZkHostConnected}:{ZkPortConnected}"))
                 {
                     try
                     {
-                        await zkClient.makePath(context.Name, true);
+                        await zkClient.makePath(path, true);
                     }
                     catch (Exception ex)
                     {
                         //TODO: Show error;
                     }
                 }
-                //TODO: Do if ex was not throwens
-                UpdateZkTree(ZkHostConnected, ZkPortConnected);
-            }
+            }).ContinueWith((t, _) => { }, null,
+                TaskScheduler.FromCurrentSynchronizationContext());
+            //TODO: Do if ex was not throwen
+            eventArgs.Session.UpdateContent(new CheckDialog());
+            await Task.Delay(TimeSpan.FromMilliseconds(CheckDialogShowingTimeMillis))
+                .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+                    TaskScheduler.FromCurrentSynchronizationContext());
+            UpdateZkTree(ZkHostConnected, ZkPortConnected);
         }
 
         #endregion
@@ -607,7 +647,11 @@ namespace SolrAdministrationToolKit.Client.Domain
 
         private async void PutClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
         {
-            if ((bool)eventArgs.Parameter == false) { return; }
+            if (Convert.ToBoolean(eventArgs.Parameter) == false)
+            {
+                _cts.Cancel();
+                return;
+            }
 
             var dialogModel = (eventArgs.Session.Content as UserControl)?.DataContext as TransferDialogViewModel;
             var dir = dialogModel?.LocalDirectory;
@@ -618,6 +662,9 @@ namespace SolrAdministrationToolKit.Client.Domain
                 //TODO: Throw the snackbar
                 return;
             }
+
+
+            _cts = new CancellationTokenSource();
 
             //OK, lets cancel the close...
             eventArgs.Cancel();
@@ -632,7 +679,7 @@ namespace SolrAdministrationToolKit.Client.Domain
                 {
                     try
                     {
-                        await zkClient.uploadToZK(dir, zkPath, ZkConfigManager.UploadFilenameExcludeRegex);
+                        await zkClient.uploadToZK(dir, zkPath, ZkConfigManager.UploadFilenameExcludeRegex, _cts.Token);
                     }
                     catch (Exception ex)
                     {
@@ -642,10 +689,13 @@ namespace SolrAdministrationToolKit.Client.Domain
             }).ContinueWith((t, _) => { }, null,
                 TaskScheduler.FromCurrentSynchronizationContext());
             //TODO: Do if ex was not throwen
-            eventArgs.Session.UpdateContent(new CheckDialog());
-            await Task.Delay(TimeSpan.FromMilliseconds(CheckDialogShowingTimeMillis))
-                .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
-                    TaskScheduler.FromCurrentSynchronizationContext());
+            if (!_cts.IsCancellationRequested)
+            {
+                eventArgs.Session.UpdateContent(new CheckDialog());
+                await Task.Delay(TimeSpan.FromMilliseconds(CheckDialogShowingTimeMillis))
+                    .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+                        TaskScheduler.FromCurrentSynchronizationContext());
+            }
             UpdateZkTree(ZkHostConnected, ZkPortConnected);
         }
 
@@ -677,7 +727,11 @@ namespace SolrAdministrationToolKit.Client.Domain
 
         private async void GetClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
         {
-            if ((bool)eventArgs.Parameter == false) { return; }
+            if (Convert.ToBoolean(eventArgs.Parameter) == false)
+            {
+                _cts.Cancel();
+                return;
+            }
 
             var dialogModel = (eventArgs.Session.Content as UserControl)?.DataContext as TransferDialogViewModel;
             var dir = dialogModel?.LocalDirectory;
@@ -688,6 +742,8 @@ namespace SolrAdministrationToolKit.Client.Domain
                 //TODO: Throw the snackbar
                 return;
             }
+
+            _cts = new CancellationTokenSource();
 
             //OK, lets cancel the close...
             eventArgs.Cancel();
@@ -702,7 +758,7 @@ namespace SolrAdministrationToolKit.Client.Domain
                 {
                     try
                     {
-                        await zkClient.downloadFromZK(zkPath, dir);
+                        await zkClient.downloadFromZK(zkPath, dir, _cts.Token);
                     }
                     catch (Exception ex)
                     {
@@ -712,10 +768,13 @@ namespace SolrAdministrationToolKit.Client.Domain
             }).ContinueWith((t, _) => { }, null,
                 TaskScheduler.FromCurrentSynchronizationContext());
             //TODO: Do if ex was not throwen
-            eventArgs.Session.UpdateContent(new CheckDialog());
-            await Task.Delay(TimeSpan.FromMilliseconds(CheckDialogShowingTimeMillis))
-                .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
-                    TaskScheduler.FromCurrentSynchronizationContext());
+            if (!_cts.IsCancellationRequested)
+            {
+                eventArgs.Session.UpdateContent(new CheckDialog());
+                await Task.Delay(TimeSpan.FromMilliseconds(CheckDialogShowingTimeMillis))
+                    .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+                        TaskScheduler.FromCurrentSynchronizationContext());
+            }
             InitializeConfigsDirectory(RootDirectories[0].Path);
         }
 
@@ -744,24 +803,50 @@ namespace SolrAdministrationToolKit.Client.Domain
             };
 
             //show the dialog
-            var result = await DialogHost.Show(view, "RootDialog");
+            await DialogHost.Show(view, "RootDialog", LinkConfigClosingEventHandler);
+        }
 
-            //check the result...
-            if (result != null && (bool)result)
+        private async void LinkConfigClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
+        {
+            if (Convert.ToBoolean(eventArgs.Parameter) == false)
+            {
+                return;
+            }
+
+            var dialogModel = (eventArgs.Session.Content as UserControl)?.DataContext as LinkConfigDialogViewModel;
+            var configName = dialogModel?.ConfigName;
+            var collectionName = dialogModel?.CollectionName;
+
+
+            //OK, lets cancel the close...
+            eventArgs.Cancel();
+
+            //...now, lets update the "session" with some new content!
+            eventArgs.Session.UpdateContent(new ProgressDialog(false));
+            //note, you can also grab the session when the dialog opens via the DialogOpenedEventHandler            
+
+            await Task.Run(async () =>
             {
                 using (var zkClient = new SolrZkClient($"{ZkHostConnected}:{ZkPortConnected}"))
                 {
                     try
                     {
                         var manager = new ZkConfigManager(zkClient);
-                        await manager.linkConfSet(context.CollectionName, context.ConfigName);
+                        await manager.linkConfSet(collectionName, configName);
                     }
                     catch (Exception ex)
                     {
                         //TODO: Show error;
                     }
                 }
-            }
+            }).ContinueWith((t, _) => { }, null,
+                TaskScheduler.FromCurrentSynchronizationContext());
+            //TODO: Do if ex was not throwen
+            eventArgs.Session.UpdateContent(new CheckDialog());
+            await Task.Delay(TimeSpan.FromMilliseconds(CheckDialogShowingTimeMillis))
+                .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+                    TaskScheduler.FromCurrentSynchronizationContext());
+            UpdateZkTree(ZkHostConnected, ZkPortConnected);
         }
 
         #endregion
@@ -788,10 +873,16 @@ namespace SolrAdministrationToolKit.Client.Domain
 
         private async void DeletePathClosingEventHandler(object sender, DialogClosingEventArgs eventArgs)
         {
-            if ((bool)eventArgs.Parameter == false) { return; }
+            if (Convert.ToBoolean(eventArgs.Parameter) == false)
+            {
+                _cts.Cancel();
+                return;
+            }
 
             var dialogModel = (eventArgs.Session.Content as UserControl)?.DataContext as CommonDialogViewModel;
             var zkPath = dialogModel?.Name;
+
+            _cts = new CancellationTokenSource();
 
             //OK, lets cancel the close...
             eventArgs.Cancel();
@@ -806,7 +897,7 @@ namespace SolrAdministrationToolKit.Client.Domain
                 {
                     try
                     {
-                        await zkClient.clean(zkPath);
+                        await zkClient.clean(zkPath, _cts.Token);
                     }
                     catch (Exception ex)
                     {
@@ -815,10 +906,13 @@ namespace SolrAdministrationToolKit.Client.Domain
                 }
             }).ContinueWith((t, _) => { }, null,
                 TaskScheduler.FromCurrentSynchronizationContext());
-            eventArgs.Session.UpdateContent(new CheckDialog());
-            await Task.Delay(TimeSpan.FromMilliseconds(CheckDialogShowingTimeMillis))
-                .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
-                    TaskScheduler.FromCurrentSynchronizationContext());
+            if (!_cts.IsCancellationRequested)
+            {
+                eventArgs.Session.UpdateContent(new CheckDialog());
+                await Task.Delay(TimeSpan.FromMilliseconds(CheckDialogShowingTimeMillis))
+                    .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
+                        TaskScheduler.FromCurrentSynchronizationContext());
+            }
             //TODO: Do if ex was not throwen
             UpdateZkTree(ZkHostConnected, ZkPortConnected);
         }
@@ -906,6 +1000,8 @@ namespace SolrAdministrationToolKit.Client.Domain
             Path = path;
             Name = name;
         }
+
+        public bool IsExpanded { get; set; }
 
         public bool OpenDirectoryMenuItemEnabled { get; set; }
         public bool BackToPreviousMenuItemEnabled { get; set; }

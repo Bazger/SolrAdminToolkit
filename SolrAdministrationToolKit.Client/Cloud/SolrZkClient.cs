@@ -508,19 +508,19 @@ namespace SolrAdministrationToolKit.Client.Cloud
 
 
         // Some pass-throughs to allow less code disruption to other classes that use SolrZkClient.
-        public async Task clean(string path)
+        public async Task clean(string path, CancellationToken token)
         {
-            await ZkMaintenanceUtils.clean(this, path);
+            await ZkMaintenanceUtils.clean(this, path, token);
         }
 
-        public async Task clean(string path, Predicate<string> nodeFilter)
+        public async Task clean(string path, CancellationToken token, Predicate<string> nodeFilter)
         {
-            await ZkMaintenanceUtils.clean(this, path, nodeFilter);
+            await ZkMaintenanceUtils.clean(this, path, token, nodeFilter);
         }
 
-        public async Task upConfig(string confPath, string confName)
+        public async Task upConfig(string confPath, string confName, CancellationToken token)
         {
-            await ZkMaintenanceUtils.upConfig(this, confPath, confName);
+            await ZkMaintenanceUtils.upConfig(this, confPath, confName, token);
         }
 
         public async Task<string> listZnode(string path, bool recurse)
@@ -528,29 +528,29 @@ namespace SolrAdministrationToolKit.Client.Cloud
             return await ZkMaintenanceUtils.listZnode(this, path, recurse);
         }
 
-        public async Task downConfig(string confName, string confPath)
+        public async Task downConfig(string confName, string confPath, CancellationToken token)
         {
-            await ZkMaintenanceUtils.downConfig(this, confName, confPath);
+            await ZkMaintenanceUtils.downConfig(this, confName, confPath, token);
         }
 
-        public async Task zkTransfer(string src, bool srcIsZk, string dst, bool dstIsZk, bool recurse)
+        public async Task zkTransfer(string src, bool srcIsZk, string dst, bool dstIsZk, bool recurse, CancellationToken token)
         {
-            await ZkMaintenanceUtils.zkTransfer(this, src, srcIsZk, dst, dstIsZk, recurse);
+            await ZkMaintenanceUtils.zkTransfer(this, src, srcIsZk, dst, dstIsZk, recurse, token);
         }
 
-        public async Task moveZnode(string src, string dst)
+        public async Task moveZnode(string src, string dst, CancellationToken token)
         {
-            await ZkMaintenanceUtils.moveZnode(this, src, dst);
+            await ZkMaintenanceUtils.moveZnode(this, src, dst, token);
         }
 
-        public async Task uploadToZK(string rootPath, string zkPath, Regex filenameExclusions)
+        public async Task uploadToZK(string rootPath, string zkPath, Regex filenameExclusions, CancellationToken token)
         {
-            await ZkMaintenanceUtils.uploadToZK(this, rootPath, zkPath, filenameExclusions);
+            await ZkMaintenanceUtils.uploadToZK(this, rootPath, zkPath, filenameExclusions, token);
         }
 
-        public async Task downloadFromZK(string zkPath, string dir)
+        public async Task downloadFromZK(string zkPath, string dir, CancellationToken token)
         {
-            await ZkMaintenanceUtils.downloadFromZK(this, zkPath, dir);
+            await ZkMaintenanceUtils.downloadFromZK(this, zkPath, dir, token);
         }
 
         public void Dispose()

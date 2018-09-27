@@ -36,10 +36,11 @@ namespace SolrAdministrationToolKit.Client.Cloud
         /// </summary>
         /// <param name="dir">Path to the files</param>
         /// <param name="configName">The name to give the config</param>
+        /// <param name="token"></param>
         /// <exception cref="IOException">If an I/O error occurs or the path does not exist</exception>
-        public async Task uploadConfigDir(string dir, string configName)
+        public async Task uploadConfigDir(string dir, string configName, CancellationToken token)
         {
-            await zkClient.uploadToZK(dir, ConfigsZKnode + "/" + configName, UploadFilenameExcludeRegex);
+            await zkClient.uploadToZK(dir, ConfigsZKnode + "/" + configName, UploadFilenameExcludeRegex, token);
         }
 
         /// <summary>
@@ -48,10 +49,11 @@ namespace SolrAdministrationToolKit.Client.Cloud
         /// <param name="dir">Path to the files</param>
         /// <param name="configName">The name to give the config</param>
         /// <param name="filenameExclusions">Files matching this pattern will not be uploaded</param>
+        /// <param name="token"></param>
         /// <exception cref="IOException">If an I/O error occurs or the path does not exist</exception>
-        public async Task uploadConfigDir(string dir, string configName, Regex filenameExclusions)
+        public async Task uploadConfigDir(string dir, string configName, Regex filenameExclusions, CancellationToken token)
         {
-            await zkClient.uploadToZK(dir, ConfigsZKnode + "/" + configName, filenameExclusions);
+            await zkClient.uploadToZK(dir, ConfigsZKnode + "/" + configName, filenameExclusions, token);
         }
 
         /// <summary>
@@ -59,10 +61,11 @@ namespace SolrAdministrationToolKit.Client.Cloud
         /// </summary>
         /// <param name="configName">The config to download</param>
         /// <param name="dir">The path to write files under</param>
+        /// <param name="token"></param>
         /// <exception cref="IOException">If an I/O error occurs or the config does not exist</exception>
-        public async Task downloadConfigDir(string configName, string dir)
+        public async Task downloadConfigDir(string configName, string dir, CancellationToken token)
         {
-            await zkClient.downloadFromZK(ConfigsZKnode + "/" + configName, dir);
+            await zkClient.downloadFromZK(ConfigsZKnode + "/" + configName, dir, token);
         }
 
         public async Task<List<string>> listConfigs()
@@ -91,7 +94,7 @@ namespace SolrAdministrationToolKit.Client.Cloud
         /// <param name="configName">The config to check existance on</param>
         /// <returns>Whether the config exists or not</returns>
         /// <exception cref="IOException">If an I/O error occurs</exception>
-        public async Task<bool> configExists(String configName)
+        public async Task<bool> configExists(string configName)
         {
             try
             {
@@ -111,12 +114,13 @@ namespace SolrAdministrationToolKit.Client.Cloud
         /// Delete a config in ZooKeeper
         /// </summary>
         /// <param name="configName">The config to delete</param>
+        /// <param name="token"></param>
         /// <exception cref="IOException">If an I/O error occurs</exception> 
-        public async Task deleteConfigDir(string configName)
+        public async Task deleteConfigDir(string configName, CancellationToken token)
         {
             try
             {
-                await zkClient.clean(ConfigsZKnode + "/" + configName);
+                await zkClient.clean(ConfigsZKnode + "/" + configName, token);
             }
             catch (Exception ex)
             {

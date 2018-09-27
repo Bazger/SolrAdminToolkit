@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -82,7 +83,7 @@ namespace SolrAdministrationToolKit.Client.Cloud
         /// <param name="dstIsZk"></param>
         /// <param name="recurse">If the source is a directory, reccursively copy the contents iff this is true.</param>
         /// <exception cref="ArgumentException">Explanatory exception due to bad params, failed operation, etc.</exception>
-        public static async Task zkTransfer(SolrZkClient zkClient, string src, bool srcIsZk, string dst, bool dstIsZk, bool recurse)
+        public static async Task zkTransfer(SolrZkClient zkClient, string src, bool srcIsZk, string dst, bool dstIsZk, bool recurse, CancellationToken token)
         {
             if (srcIsZk == false && dstIsZk == false)
             {
@@ -130,7 +131,7 @@ namespace SolrAdministrationToolKit.Client.Cloud
             //local -> ZK copy
             if (dstIsZk)
             {
-                await uploadToZK(zkClient, src, dst, null);
+                await uploadToZK(zkClient, src, dst, null, token);
                 return;
             }
 
@@ -139,7 +140,7 @@ namespace SolrAdministrationToolKit.Client.Cloud
             // ZK -> local copy where ZK is a parent node
             if ((await zkClient.getChildren(src, null, true)).Any())
             {
-                await downloadFromZK(zkClient, src, dst);
+                await downloadFromZK(zkClient, src, dst, token);
                 return;
             }
 
@@ -188,7 +189,7 @@ namespace SolrAdministrationToolKit.Client.Cloud
         }
 
 
-        public static async Task moveZnode(SolrZkClient zkClient, string src, string dst)
+        public static async Task moveZnode(SolrZkClient zkClient, string src, string dst, CancellationToken token)
         {
             String destName = normalizeDest(src, dst, true, true);
 
@@ -216,7 +217,7 @@ namespace SolrAdministrationToolKit.Client.Cloud
             // throws error if not all there so the source is left intact. Throws error if source and dest don't match.
             await checkAllZnodesThere(zkClient, src, destName);
 
-            await clean(zkClient, src);
+            await clean(zkClient, src, token);
         }
 
 
@@ -237,21 +238,21 @@ namespace SolrAdministrationToolKit.Client.Cloud
         #endregion
 
         // This not just a copy operation since the config manager takes care of construction the znode path to configsets
-        public static async Task downConfig(SolrZkClient zkClient, string confName, string confPath)
+        public static async Task downConfig(SolrZkClient zkClient, string confName, string confPath, CancellationToken token)
         {
             var manager = new ZkConfigManager(zkClient);
 
             // Try to download the configset
-            await manager.downloadConfigDir(confName, confPath);
+            await manager.downloadConfigDir(confName, confPath, token);
         }
 
         // This not just a copy operation since the config manager takes care of construction the znode path to configsets
-        public static async Task upConfig(SolrZkClient zkClient, string confPath, string confName)
+        public static async Task upConfig(SolrZkClient zkClient, string confPath, string confName, CancellationToken token)
         {
             ZkConfigManager manager = new ZkConfigManager(zkClient);
 
             // Try to download the configset
-            await manager.uploadConfigDir(confPath, confName);
+            await manager.uploadConfigDir(confPath, confName, token);
         }
 
         /// <summary>
@@ -262,7 +263,7 @@ namespace SolrAdministrationToolKit.Client.Cloud
         /// <param name="path"></param>
         /// <param name="filter">For node to be deleted</param>
         /// <returns></returns>
-        public static async Task clean(SolrZkClient zkClient, string path, Predicate<string> filter = null)
+        public static async Task clean(SolrZkClient zkClient, string path, CancellationToken token, Predicate<string> filter = null)
         {
             var paths = new List<string>();
 
@@ -280,6 +281,7 @@ namespace SolrAdministrationToolKit.Client.Cloud
                 {
                     try
                     {
+                        token.ThrowIfCancellationRequested();
                         await zkClient.delete(subpath, -1, true);
                     }
                     catch (Exception ex)
@@ -290,14 +292,14 @@ namespace SolrAdministrationToolKit.Client.Cloud
                         }
                         else
                         {
-                            throw ex;
+                            throw;
                         }
                     }
                 }
             }
         }
 
-        public static async Task uploadToZK(SolrZkClient zkClient, string fromPath, string zkPath, Regex filenameExclusions)
+        public static async Task uploadToZK(SolrZkClient zkClient, string fromPath, string zkPath, Regex filenameExclusions, CancellationToken token)
         {
 
             var path = fromPath;
@@ -314,13 +316,15 @@ namespace SolrAdministrationToolKit.Client.Cloud
                     throw new IOException("Path " + rootPath + " does not exist");
                 }
                 var filePath = path;
+                token.ThrowIfCancellationRequested();
                 await uploadFileToZk(zkClient, zkPath, filePath, filenameExclusions);
             }
+
             WalkFileTree(rootPath, async (file) =>
             {
                 var zkNode = createZkNodeName(zkPath, rootPath, file);
                 await uploadFileToZk(zkClient, zkNode, file, filenameExclusions);
-            });
+            }, token);
         }
 
         private static async Task uploadFileToZk(SolrZkClient zkClient, string zkNode, string file, Regex filenameExclusions)
@@ -351,16 +355,18 @@ namespace SolrAdministrationToolKit.Client.Cloud
             }
         }
 
-        private static void WalkFileTree(string rootPath, Action<string> operationOnFile)
+        private static void WalkFileTree(string rootPath, Action<string> operationOnFile, CancellationToken token)
         {
             foreach (var file in Directory.GetFiles(rootPath))
             {
+                token.ThrowIfCancellationRequested();
                 operationOnFile(file);
             }
 
             foreach (var dir in Directory.GetDirectories(rootPath))
             {
-                WalkFileTree(dir, operationOnFile);
+                token.ThrowIfCancellationRequested();
+                WalkFileTree(dir, operationOnFile, token);
             }
         }
 
@@ -383,10 +389,11 @@ namespace SolrAdministrationToolKit.Client.Cloud
             return data.Length;
         }
 
-        public static async Task downloadFromZK(SolrZkClient zkClient, string zkPath, string filePath)
+        public static async Task downloadFromZK(SolrZkClient zkClient, string zkPath, string filePath, CancellationToken token)
         {
             try
             {
+                token.ThrowIfCancellationRequested();
                 var children = await zkClient.getChildren(zkPath, null, true);
                 // If it has no children, it's a leaf node, write the associated data from the ZNode.
                 // Otherwise, continue recursing, but write the associated data to a special file if any
@@ -396,6 +403,7 @@ namespace SolrAdministrationToolKit.Client.Cloud
                     // disk so create an empty file.
                     if (await copyDataDown(zkClient, zkPath, filePath) == 0)
                     {
+                        Debug.WriteLine("Download: " + filePath);
                         File.Create(filePath);
                     }
                 }
@@ -404,6 +412,8 @@ namespace SolrAdministrationToolKit.Client.Cloud
                     Directory.CreateDirectory(filePath); // Make parent dir.
                                                          // ZK nodes, whether leaf or not can have data. If it's a non-leaf node and
                                                          // has associated data write it into the special file.
+                    token.ThrowIfCancellationRequested();
+                    Debug.WriteLine("Download: " + filePath);
                     await copyDataDown(zkClient, zkPath, Path.Combine(filePath, ZKNODE_DATA_FILE));
                     foreach (var child in children)
                     {
@@ -419,7 +429,7 @@ namespace SolrAdministrationToolKit.Client.Cloud
                             continue;
                         }
                         // Go deeper into the tree now
-                        await downloadFromZK(zkClient, zkChild, Path.Combine(filePath, child));
+                        await downloadFromZK(zkClient, zkChild, Path.Combine(filePath, child), token);
                     }
                 }
             }
