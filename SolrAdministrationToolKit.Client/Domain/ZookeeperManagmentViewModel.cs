@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using SolrAdministrationToolKit.Client.Cloud;
 using SolrAdministrationToolKit.Client.Dialogs;
@@ -39,6 +40,8 @@ namespace SolrAdministrationToolKit.Client.Domain
         private bool _isZkPathSelected;
         private bool _isZkConnected;
 
+        private Visibility _zkTreeLoadingVisibility;
+
         public ZookeeperManagmentViewModel(ISnackbarMessageQueue snackbarMessageQueue)
         {
             _snackbarMessageQueue = snackbarMessageQueue;
@@ -46,7 +49,9 @@ namespace SolrAdministrationToolKit.Client.Domain
             RootDirectories = new ObservableCollection<TreeViewDirectory>();
 
             ConfigsPath = "C:\\Temp";
-            InitializeConfigsDirectory(ConfigsPath);
+            UpdateDirectoriesTree(ConfigsPath);
+
+            ZkTreeLoadingVisibility = Visibility.Hidden;
         }
 
         public string ConfigsPath
@@ -126,21 +131,24 @@ namespace SolrAdministrationToolKit.Client.Domain
             }
         }
 
-        public ICommand ApplyCommand => new RelayCommand(_ => InitializeConfigsDirectory(ConfigsPath));
+        public Visibility ZkTreeLoadingVisibility
+        {
+            get { return _zkTreeLoadingVisibility; }
+            set
+            {
+                this.MutateVerbose(ref _zkTreeLoadingVisibility, value, RaisePropertyChanged());
+            }
+        }
+
+        public ICommand ApplyCommand => new RelayCommand(_ =>
+        {
+            UpdateDirectoriesTree(ConfigsPath);
+        });
         public ICommand ConnectCommand => new RelayCommand(_ =>
         {
             UpdateZkTree(ZkHost, ZkPort);
         });
 
-        private async void UpdateZkTree(string zkHost, string zkPort)
-        {
-            var tree = await Task.Run(() => ConnectToZkTree(zkHost, zkPort));
-            if (tree != null)
-            {
-                ZkNode.Clear();
-                ZkNode.Add(tree);
-            }
-        }
 
         public ICommand DirectoriesTreeSelectedItemChangedCommand => new RelayCommand(DirectoryTree_SelectedItemChanged);
         public ICommand ZkTreeSelectedItemChangedCommand => new RelayCommand(ZkTree_SelectedItemChanged);
@@ -149,7 +157,7 @@ namespace SolrAdministrationToolKit.Client.Domain
         public ObservableCollection<TreeViewDirectory> RootDirectories { get; }
         public ObservableCollection<TreeViewDirectory> ZkNode { get; }
 
-        private void InitializeConfigsDirectory(string path)
+        private void UpdateDirectoriesTree(string path)
         {
             if (Path.GetPathRoot(path) != path)
             {
@@ -184,11 +192,22 @@ namespace SolrAdministrationToolKit.Client.Domain
                 file.ShowInExplorerEvent += ShowInExplorer;
             }
 
-
             RootDirectories.Clear();
             RootDirectories.Add(selectedDir);
 
             IsDirectoryInitialized = true;
+        }
+
+        private async void UpdateZkTree(string zkHost, string zkPort)
+        {
+            ZkTreeLoadingVisibility = Visibility.Visible;
+            ZkNode.Clear();
+            var tree = await Task.Run(() => ConnectToZkTree(zkHost, zkPort));
+            if (tree != null)
+            {
+                ZkNode.Add(tree);
+            }
+            ZkTreeLoadingVisibility = Visibility.Hidden;
         }
 
         private TreeViewDirectory ConnectToZkTree(string zkHost, string zkPort)
@@ -308,7 +327,7 @@ namespace SolrAdministrationToolKit.Client.Domain
         {
             if (sender is TreeViewDirectory dir)
             {
-                InitializeConfigsDirectory(dir.Path);
+                UpdateDirectoriesTree(dir.Path);
             }
         }
 
@@ -317,7 +336,7 @@ namespace SolrAdministrationToolKit.Client.Domain
             if (sender is TreeViewDirectory dir)
             {
                 var previousDir = Path.GetDirectoryName(dir.Path);
-                InitializeConfigsDirectory(previousDir);
+                UpdateDirectoriesTree(previousDir);
             }
         }
 
@@ -465,7 +484,7 @@ namespace SolrAdministrationToolKit.Client.Domain
                     .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
                         TaskScheduler.FromCurrentSynchronizationContext());
             }
-            InitializeConfigsDirectory(RootDirectories[0].Path);
+            UpdateDirectoriesTree(RootDirectories[0].Path);
         }
 
         #endregion
@@ -775,7 +794,7 @@ namespace SolrAdministrationToolKit.Client.Domain
                     .ContinueWith((t, _) => eventArgs.Session.Close(false), null,
                         TaskScheduler.FromCurrentSynchronizationContext());
             }
-            InitializeConfigsDirectory(RootDirectories[0].Path);
+            //InitializeConfigsDirectory(RootDirectories[0].Path);
         }
 
         #endregion

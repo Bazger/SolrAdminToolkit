@@ -269,7 +269,12 @@
                 </materialDesign:Card>
                 <materialDesign:Card VerticalAlignment="Stretch" Grid.Column="2" Grid.Row="1" Padding="10 10 10 10" Margin="10 0 10 0" MinHeight="400"  materialDesign:ShadowAssist.ShadowDepth="Depth2">
                     <StackPanel  Orientation="Vertical">
-                        <TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}" Margin="0 0 0 5">Tree:</TextBlock>
+                        <StackPanel Orientation="Horizontal" Width="Auto">
+                            <TextBlock Style="{StaticResource MaterialDesignTitleTextBlock}" Margin="0 0 0 5">Tree:</TextBlock>
+                            <ProgressBar Visibility="{Binding ZkTreeLoadingVisibility}"  Margin="10 3 0 0"
+                                         Style="{DynamicResource MaterialDesignCircularProgressBar}" 
+                                         VerticalAlignment="Top" HorizontalAlignment="Left" IsIndeterminate="True" Value="0"/>
+                        </StackPanel>
                         <Separator
                             Style="{StaticResource MaterialDesignDarkSeparator}"
                             Margin="8 0 8 0" />
