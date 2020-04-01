@@ -1,2 +1,2 @@
-# Solr Admin ToolKit
+# Solr Admin Toolkit
 Administration tools for Solr Managment
